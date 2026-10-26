@@ -158,7 +158,7 @@
         add(wrap, canvas);
         add(parent, wrap);
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, app.scene.studio.MAX_RATIO));
         renderer.setClearColor(0x000000, 0);
         renderer.shadowMap.enabled = true;
         const scene = new THREE.Scene();
@@ -167,7 +167,7 @@
         const sun = new THREE.DirectionalLight(0xffffff, 2.2);
         sun.position.set(10, 30, 25);
         sun.castShadow = true;
-        sun.shadow.mapSize.set(2048, 2048);
+        sun.shadow.mapSize.set(1024, 1024);
         Object.assign(sun.shadow.camera, { left: -45, right: 45, top: 30, bottom: -30, near: 1, far: 120 });
         scene.add(sun);
         const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.ShadowMaterial({ opacity: 0.25 }));

@@ -1,6 +1,6 @@
 // Runs the walkthrough: which step is showing, the little state of each screen, and visitor actions.
 (() => {
-    const { track } = app.dom;
+    const { track, loop } = app.dom;
     const { STEPS, show } = app.story.steps;
     const { createStage } = app.story.stage;
     const { newModel, applyAction, drawScreen, drawHost } = app.story.screens;
@@ -17,7 +17,7 @@
         const stage = createStage(parent, scenario);
         const tagSets = STEPS.map((step) => step.tags(stage).map(([text, point]) => stage.tags.add(text, point)));
         const state = { idx: 0, playing: true, start: performance.now() / 1000 };
-        const live = { models: [], host: newModel(), sends: [], demoDone: false, lastDraw: 0, running: true, last: 0 };
+        const live = { models: [], host: newModel(), sends: [], demoDone: false, lastDraw: 0, last: 0 };
         const listeners = new Set();
         const notify = () => listeners.forEach((fn) => fn(state));
 
@@ -97,7 +97,6 @@
         }
 
         function frame(now) {
-            if (!live.running) return;
             const sec = now / 1000;
             const dt = Math.min(0.05, sec - (live.last || sec));
             live.last = sec;
@@ -114,13 +113,11 @@
             animateRadio(sec);
             if (state.playing && t > (step.interact ? INTERACT_SECONDS : STEP_SECONDS) && state.idx < STEPS.length - 1) go(state.idx + 1);
             stage.render(dt);
-            requestAnimationFrame(frame);
         }
 
-        track(() => { live.running = false; });
         go(0);
         stage.setCamera(STEPS[0].camera, true);
-        requestAnimationFrame(frame);
+        loop(stage.canvas, frame);
         return {
             stage, state, go, send, typeKey,
             current, next: () => go(state.idx + 1), prev: () => go(state.idx - 1),

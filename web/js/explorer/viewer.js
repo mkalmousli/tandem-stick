@@ -1,6 +1,6 @@
 // The 3D viewport: renderer, lights, picking, highlights, glass toolbar and hover label.
 (() => {
-    const { el, add, on, paint, themed, track } = app.dom;
+    const { el, add, on, paint, themed, track, loop } = app.dom;
     const { state, setState, subscribe, onCommand, emit } = app.ex;
     const { FONT, RADIUS, SPACE, px } = app.styles;
     const { pal } = app.state;
@@ -12,6 +12,7 @@
     const { paintMaterials } = app.scene.materials;
     const { buildModel, focusY } = app.scene.model;
     const { createOrbit } = app.scene.orbit;
+    const { buildEnvironment, buildLights, buildGround } = app.scene.studio;
 
     const PRESETS = {
         front: { theta: 0, phi: 1.3, radius: 140 },
@@ -29,53 +30,10 @@
     const FOV = 35;
     const PORTRAIT_FIT = 1.45;
     const EASE_RATE = 8;
-    const LIGHT = { hemi: 0.6, key: 2.2, keyPos: [30, 70, 45], shadow: 4096, shadowRange: 140 };
-    const GHOST_PICK_LIMIT = 0.3;
     const SPIN_GUARD_MS = 1500;
     const GLASS_ALPHA = "b8";
     const BLUR = "blur(10px)";
     const HINT = "Drag to orbit · scroll to zoom · shift-drag to pan · click a part · ? for shortcuts";
-
-    function buildEnvironment(renderer) {
-        const studio = new THREE.Scene();
-        studio.background = new THREE.Color(0.16, 0.16, 0.18);
-        const softbox = (w, h, pos, power) => {
-            const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(power, power, power), side: THREE.DoubleSide });
-            const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
-            mesh.position.set(...pos);
-            mesh.lookAt(0, 0, 0);
-            studio.add(mesh);
-        };
-        softbox(10, 6, [0, 8, 6], 6);
-        softbox(6, 10, [-9, 2, 0], 3);
-        softbox(6, 10, [9, 2, -3], 2.5);
-        softbox(14, 4, [0, -4, 8], 1.2);
-        const pmrem = new THREE.PMREMGenerator(renderer);
-        const texture = pmrem.fromScene(studio, 0.04).texture;
-        return { texture, pmrem };
-    }
-
-    function buildLights(scene) {
-        scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, LIGHT.hemi));
-        const key = new THREE.DirectionalLight(0xffffff, LIGHT.key);
-        key.position.set(...LIGHT.keyPos);
-        key.castShadow = true;
-        key.shadow.mapSize.set(LIGHT.shadow, LIGHT.shadow);
-        const range = LIGHT.shadowRange;
-        Object.assign(key.shadow.camera, { left: -range, right: range, top: range, bottom: -range, near: 1, far: 600 });
-        key.shadow.bias = -0.0005;
-        scene.add(key);
-    }
-
-    function buildGround(scene) {
-        const mat = new THREE.ShadowMaterial();
-        const ground = new THREE.Mesh(new THREE.PlaneGeometry(900, 900), mat);
-        ground.rotation.x = -Math.PI / 2;
-        ground.position.y = -0.05;
-        ground.receiveShadow = true;
-        scene.add(ground);
-        return mat;
-    }
 
     function buildHelper() {
         const helper = new THREE.BoxHelper(undefined, "#ffffff");
@@ -145,7 +103,7 @@
         add(parent, wrap);
 
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, app.scene.studio.MAX_RATIO));
         renderer.setClearColor(0x000000, 0);
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.05;
@@ -180,11 +138,14 @@
             const rect = canvas.getBoundingClientRect();
             ndc.set(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1);
             ray.setFromCamera(ndc, camera);
-            const hits = ray.intersectObject(model.root, true);
-            const hit = hits.find((item) => !(item.object.userData.ghost && live.explode > GHOST_PICK_LIMIT));
-            let obj = hit ? hit.object : null;
-            while (obj && obj.userData.id === undefined) obj = obj.parent;
-            return obj ? obj.userData.id : null;
+            // Ids of everything under the pointer, nearest first. Clicking the selected part again picks what is behind it.
+            const ids = [];
+            ray.intersectObject(model.root, true).forEach((hit) => {
+                let obj = hit.object;
+                while (obj && obj.userData.id === undefined) obj = obj.parent;
+                if (obj && !ids.includes(obj.userData.id)) ids.push(obj.userData.id);
+            });
+            return ids.length > 1 && ids[0] === state.selected ? ids[1] : ids[0] || null;
         }
 
         function handleClick(id) {
@@ -216,7 +177,6 @@
         }
 
         function frame(now) {
-            if (!live.running) return;
             const dt = Math.min(0.05, (now - (live.last || now)) / 1000);
             live.last = now;
             live.explode += (state.explode - live.explode) * Math.min(1, dt * EASE_RATE);
@@ -228,7 +188,6 @@
             trackHelper(selectHelper, state.selected);
             updateLabel();
             renderer.render(scene, camera);
-            requestAnimationFrame(frame);
         }
 
         function focus(id) {
@@ -293,7 +252,7 @@
         onCommand("focus", focus);
         buildToolbar(wrap, orbit);
         orbit.setSpin(state.spin);
-        requestAnimationFrame(frame);
+        loop(canvas, frame);
         track(() => {
             live.running = false;
             env.pmrem.dispose();

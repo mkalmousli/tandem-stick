@@ -68,6 +68,23 @@
     }
 
     // ---- listeners ----
+    // Runs `frame` every animation frame, but only while `node` is on screen and the tab is visible.
+    function loop(node, frame) {
+        let id = 0, seen = true, alive = true;
+        const tick = (now) => {
+            id = 0;
+            if (!alive || !seen || document.hidden) return;
+            frame(now);
+            id = requestAnimationFrame(tick);
+        };
+        const wake = () => { if (!id && alive && seen && !document.hidden) id = requestAnimationFrame(tick); };
+        const watcher = new IntersectionObserver((entries) => { seen = entries.some((entry) => entry.isIntersecting); wake(); });
+        watcher.observe(node);
+        document.addEventListener("visibilitychange", wake);
+        track(() => { alive = false; cancelAnimationFrame(id); watcher.disconnect(); document.removeEventListener("visibilitychange", wake); });
+        wake();
+    }
+
     function on(target, type, handler, options) {
         target.addEventListener(type, handler, options);
         const off = () => target.removeEventListener(type, handler, options);
@@ -142,5 +159,5 @@
 
     const focusRing = (palette, ring) => (ring ? `2px solid ${palette.accent}` : "none");
 
-    app.dom = { createScope, withScope, region, track, el, svgEl, add, on, paint, themed, applyTheme, watchViewport, interact, focusRing, SIZE };
+    app.dom = { createScope, withScope, region, track, loop, el, svgEl, add, on, paint, themed, applyTheme, watchViewport, interact, focusRing, SIZE };
 })();
