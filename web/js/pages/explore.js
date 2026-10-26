@@ -114,7 +114,7 @@
             if (!over) {
                 viewer.setInset(0);
                 grip.style.display = "none";
-                Object.assign(panel.style, { position: "static", display: "flex", width: px(stageW), height: "auto", zoom: String(PHONE_ZOOM) });
+                Object.assign(panel.style, { position: "static", display: "flex", width: px(stageW / PHONE_ZOOM), height: "auto", zoom: String(PHONE_ZOOM) });
                 return;
             }
             const width = Math.round(Math.max(PANEL_MIN, Math.min(wanted, stageW * PANEL_SHARE)));
