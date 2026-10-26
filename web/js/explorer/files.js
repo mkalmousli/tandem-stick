@@ -16,7 +16,7 @@
     const BASE = "files/";
     const GERBER_DIR = "hardware/fab/gerbers/";
     const BACKDROP = "#0b1220";
-    const BOARD_FILL = "#14532d";
+    const BOARD_FILL = "#1c1708";
     const BOARD_PAD = 14;
     const RATIO = 6;
     const TEXT_H = 520;
@@ -40,7 +40,8 @@
     const BYTES_PER_ROW = 16;
     const HEX_LIMIT = 4096;
     const IMAGE_EXT = /\.(png|jpe?g|gif|webp|svg)$/i;
-    const kindOf = (path) => (/\.stl$/i.test(path) ? "stl" : /\.(csv|tsv)$/i.test(path) ? "csv" : /\.zip$/i.test(path) ? "zip" : IMAGE_EXT.test(path) ? "image" : "text");
+    const kindOf = (path) => (/\.stl$/i.test(path) ? "stl" : /\.(csv|tsv)$/i.test(path) ? "csv" : /\.zip$/i.test(path) ? "zip" : IMAGE_EXT.test(path) ? "image" : g.isGerber(path) ? "layer" : g.isDrill(path) ? "drill" : "text");
+    const GROUPS = [["stl", "3D models"], ["layer", "PCB layers (Gerber)"], ["drill", "Drill files"], ["csv", "Tables"], ["zip", "Bundles"], ["image", "Images"], ["text", "Source and project files"]];
     const sizeText = (bytes) => (bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`);
 
     // Everything in the manifest becomes previewable, curated entries first.
@@ -62,6 +63,7 @@
         return cache.get(key);
     }
 
+    const heading3 = (text) => label(text.toUpperCase(), { size: FONT.xs, weight: FONT.bold, tone: "muted" });
     const note = (text) => para(text, { size: FONT.sm, tone: "muted" });
     const frame = (...children) => {
         const box = el("div", { borderRadius: px(RADIUS.md), overflow: "hidden", borderWidth: "1px", borderStyle: "solid", boxSizing: "border-box" });
@@ -284,7 +286,41 @@
         return [frame(zoomable(img, file.name))];
     }
 
+    // One Gerber layer drawn over the board outline, with the raw file underneath.
+    async function layerView(file) {
+        const name = g.layerName(file.path);
+        const [text, edgeText] = await Promise.all([load(file.path), load(`${GERBER_DIR}stick-Edge_Cuts.gm1`)]);
+        const ops = g.parseGerber(text);
+        const edge = g.parseGerber(edgeText);
+        const box = g.bounds(edge);
+        const width = Math.max(260, Math.round(app.state.state.viewport.w < 700 ? app.state.state.viewport.w - 2 * SPACE.lg : 340));
+        const height = Math.round(width * ((box.y1 - box.y0) / (box.x1 - box.x0)) + 2 * BOARD_PAD);
+        const canvas = el("canvas", { display: "block", width: "100%", height: "auto" });
+        canvas.width = width * RATIO;
+        canvas.height = height * RATIO;
+        const ctx = canvas.getContext("2d");
+        ctx.setTransform(RATIO, 0, 0, RATIO, 0, 0);
+        ctx.fillStyle = BACKDROP;
+        ctx.fillRect(0, 0, width, height);
+        const view = g.makeView(box, width, height, BOARD_PAD);
+        g.drawOps(ctx, [{ type: "region", pts: outlinePoints(edge, box) }], view, BOARD_FILL, 1);
+        const [, color, alpha] = g.styleFor(`stick-${name}.x`);
+        g.drawOps(ctx, ops, view, color, Math.max(alpha, 0.55));
+        g.drawOps(ctx, edge, view, "#ffd54a", 1);
+        return [frame(zoomable(canvas, `${name} layer`)), note(`${name.replace("_", " ")}: ${ops.length.toLocaleString()} drawing operations on a ${(box.x1 - box.x0).toFixed(1)} × ${(box.y1 - box.y0).toFixed(1)} mm board.`), heading3("Raw file"), ...textView(text)];
+    }
+
+    // Drill hits as a table: where each hole is and how big.
+    async function drillView(file) {
+        const holes = g.parseDrill(await load(file.path));
+        const rows = holes.map(({ at, d }, idx) => [String(idx + 1), at[0].toFixed(2), at[1].toFixed(2), d.toFixed(2)]);
+        const sizes = [...new Set(holes.map(({ d }) => d.toFixed(2)))].map((d) => `${holes.filter((hole) => hole.d.toFixed(2) === d).length} × ${d} mm`);
+        return [note(`${holes.length} holes: ${sizes.join(", ") || "none"}. Positions in mm.`), table({ head: ["#", "X mm", "Y mm", "Diameter mm"], rows, numeric: [0, 1, 2, 3] })];
+    }
+
     const RENDER = {
+        layer: async (file) => layerView(file),
+        drill: async (file) => drillView(file),
         zip: async (file) => zipView(await load(file.path, true)),
         image: async (file) => imageView(file),
         board: async () => boardView(await loadBoard()),
@@ -321,7 +357,7 @@
         ];
     }
 
-    const MORE_H = 140;
+    const MORE_H = 200;
 
     function filesView() {
         const holder = stack(SPACE.md);
@@ -331,9 +367,15 @@
             const picker = row(SPACE.xs);
             all.filter((item) => !item.extra).forEach((item) => add(picker, button({ label: item.name, kind: "tab", pressed: item.id === file.id, onClick: () => setState({ file: item.id }) })));
             const extras = all.filter((item) => item.extra);
-            const more = scroller(row(SPACE.xs, { overflowY: "auto", height: px(MORE_H), alignContent: "flex-start", flexWrap: "wrap" }));
-            extras.forEach((item) => add(more, button({ label: item.name, kind: "tab", pressed: item.id === file.id, onClick: () => setState({ file: item.id }) })));
-            add(holder, picker, extras.length ? add(stack(SPACE.xs), label(`ALL FILES (${extras.length} more)`, { size: FONT.xs, weight: FONT.bold, tone: "muted" }), more) : null, ...fileView(file));
+            const more = scroller(stack(SPACE.sm, { overflowY: "auto", height: px(MORE_H) }));
+            GROUPS.forEach(([kind, title]) => {
+                const items = extras.filter((item) => item.kind === kind);
+                if (!items.length) return;
+                const chips = row(SPACE.xs, { flexWrap: "wrap" });
+                items.forEach((item) => add(chips, button({ label: item.name, kind: "tab", pressed: item.id === file.id, onClick: () => setState({ file: item.id }) })));
+                add(more, add(stack(SPACE.xs), label(`${title.toUpperCase()} · ${items.length}`, { size: FONT.xs, weight: FONT.bold, tone: "muted" }), chips));
+            });
+            add(holder, picker, extras.length ? add(stack(SPACE.xs), label(`ALL FILES · ${extras.length} MORE`, { size: FONT.xs, weight: FONT.bold, tone: "accent" }), more) : null, ...fileView(file));
         })).catch(() => view.render(() => add(holder, note("The file list comes with the published site. Use the Downloads page."))));
         return [holder];
     }

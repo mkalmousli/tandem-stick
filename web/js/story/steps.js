@@ -5,11 +5,12 @@
     const clamp01 = (value) => Math.min(1, Math.max(0, value));
     const ease = (t, from, to) => { const k = clamp01((t - from) / (to - from)); return k * k * (3 - 2 * k); };
     const back = (t, from, to) => { const k = clamp01((t - from) / (to - from)); const c = 1.70158; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); };
-    const SLIDE_IN = 7;
+    const SLIDE_IN = 5;
+    const LIFT = 4;
+    const STAGGER_FAST = 0.45;
     const HERO_SCALE = 2;
-    const STAGGER = 0.7;
-    const BLINK_HZ = 2;
-    const UPDATE_SECONDS = 6;
+        const BLINK_HZ = 2;
+    const UPDATE_SECONDS = 4;
 
     const portOf = (s, device) => s.portWorld(device);
 
@@ -24,6 +25,19 @@
         const tip = portOf(s, device);
         stick.group.position.set(device.group.position.x + device.width / 2 + PLUG_TIP + away, tip.y, tip.z);
         stick.group.rotation.y = Math.PI;
+    }
+
+    // Approach in two beats so a stick never passes through a machine: come down first (arc height `lift`, depth `swing`),
+    // then slide straight into the port, with a small bounce at the end. `k` runs 0 to 1.
+    function dock(stick, place, k, { lift = LIFT, swing = 2, roll = 0 } = {}) {
+        const down = clamp01(k / 0.55);
+        const slide = clamp01((k - 0.45) / 0.55);
+        const fall = 1 - down * down * (3 - 2 * down);
+        const glide = 1 - (1 + 2.2 * Math.pow(slide - 1, 3) + 1.2 * Math.pow(slide - 1, 2));
+        stick.group.position.y += fall * lift;
+        stick.group.position.z += fall * swing;
+        stick.group.position.x -= glide * SLIDE_IN * (place === plug ? 1 : -1);
+        stick.group.rotation.z = fall * roll;
     }
 
     function show(s, { hero = false, host = false, blank = false, targets = false }) {
@@ -53,7 +67,7 @@
                 s.hero.group.position.set(0, 0.5 + Math.sin(now * 1.4) * 0.18, 0);
                 s.hero.group.rotation.z = Math.sin(now * 0.9) * 0.05;
                 s.hero.group.rotation.y = 0.7 + t * 0.4;
-                s.hero.setLidLift(back(t, 1, 3.2) * 1.4);
+                s.hero.setLidLift(back(t, 0.6, 2) * 1.4);
                 s.hero.setLed(blink(now));
             },
             tags: (s) => [
@@ -68,9 +82,10 @@
             camera: { pos: [HOST_X - 2, 7, 17], look: [HOST_X - 2, 1.8, 0] },
             show: { host: true },
             pose(s, t) {
-                const away = SLIDE_IN * (1 - back(t, 0.3, 2.2));
-                plug(s.host.stick, s.host.device, s, away);
-                s.host.stick.setLed(t > 2.2 ? COLOR.led.blue : COLOR.led.off);
+                plug(s.host.stick, s.host.device, s);
+                dock(s.host.stick, plug, clamp01((t - 0.2) / 1.6), { roll: 0.5 });
+                const boot = t - 1.8;
+                s.host.stick.setLed(boot < 0 ? COLOR.led.off : boot < 0.3 ? COLOR.led.white : COLOR.led.blue);
             },
             tags: (s) => [["Your computer", above(s.host.device.group, 6.6)], ["Host stick (blue)", above(s.host.stick.group, 2.2)]],
         },
@@ -82,10 +97,11 @@
             pose(s, t, now) {
                 plug(s.host.stick, s.host.device, s);
                 s.host.stick.setLed(COLOR.led.blue);
-                plugRight(s.host.blank, s.host.device, s, SLIDE_IN * (1 - back(t, 0.3, 2)));
-                const stage = t < 2.4 ? COLOR.led.red : t < 4 ? (Math.floor(now * 6) % 2 ? COLOR.led.blue : COLOR.led.off) : COLOR.led.green;
+                plugRight(s.host.blank, s.host.device, s);
+                dock(s.host.blank, plugRight, clamp01((t - 0.2) / 1.4), { lift: 2.5, swing: -2.5, roll: -0.6 });
+                const stage = t < 1.8 ? COLOR.led.red : t < 3.2 ? (Math.floor(now * 8) % 2 ? COLOR.led.blue : COLOR.led.off) : COLOR.led.green;
                 s.host.blank.setLed(stage);
-                s.rings[0].userData.at = t > 2.4 && t < 4 ? (t - 2.4) / 1.6 : -1;
+                s.rings[0].userData.at = t > 1.8 && t < 3.2 ? (t - 1.8) / 1.4 : -1;
                 s.rings[0].userData.from = s.host.stick.group;
             },
             tags: (s) => [["Host stick", above(s.host.stick.group, 2.2)], ["New stick: gets the key", above(s.host.blank.group, 2.2)]],
@@ -100,8 +116,9 @@
                 plug(s.host.stick, s.host.device, s);
                 s.host.stick.setLed(COLOR.led.blue);
                 s.targets.forEach((slot, idx) => {
-                    const k = back(t, 0.4 + idx * STAGGER, 2.2 + idx * STAGGER);
-                    plug(slot.stick, slot.device, s, SLIDE_IN * (1 - k));
+                    const k = clamp01((t - 0.2 - idx * STAGGER_FAST) / 1.2);
+                    plug(slot.stick, slot.device, s);
+                    dock(slot.stick, plug, k, { lift: 6, swing: 0, roll: 0 });
                     slot.stick.setLed(k >= 1 ? COLOR.led.green : COLOR.led.off);
                 });
             },
@@ -114,7 +131,10 @@
             show: { host: true, targets: true },
             live: [0],
             demoAt: 1.6, demoTargets: "first",
-            pose(s) { steady(s); },
+            pose(s, t, now) {
+                steady(s);
+                s.host.stick.group.position.y += Math.max(0, Math.sin(now * 5)) * 0.12;
+            },
             tags: (s) => [["You type here", above(s.host.device.group, 6.6)], [s.targets[0].name, above(s.targets[0].device.group, 6.4)]],
         },
         {
@@ -124,7 +144,10 @@
             show: { host: true, targets: true },
             live: [0, 1, 2],
             demoAt: 1.6, demoTargets: "all",
-            pose(s) { steady(s); },
+            pose(s, t, now) {
+                steady(s);
+                s.targets.forEach((slot, idx) => { slot.stick.group.position.y += Math.max(0, Math.sin(now * 4 - idx * 1.1)) * 0.18; });
+            },
             tags: (s) => s.targets.map((slot) => [slot.name, above(slot.device.group, 6.4)]),
         },
         {
@@ -137,7 +160,7 @@
                 steady(s);
                 const violet = Math.floor(now * 3) % 2 ? COLOR.led.violet : COLOR.led.off;
                 s.targets.forEach((slot, idx) => {
-                    const done = clamp01((t - 0.5 - idx * 0.8) / (UPDATE_SECONDS / 2));
+                    const done = clamp01((t - 0.3 - idx * 0.5) / (UPDATE_SECONDS / 2));
                     slot.stick.setLed(done >= 1 ? COLOR.led.green : violet);
                     slot.progress = done;
                 });

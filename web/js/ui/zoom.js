@@ -8,6 +8,8 @@
     const SHADE = "rgba(6,6,8,0.92)";
     const FIT_SHARE = 0.92;
     const MAX_K = 12;
+    const TAP_PX = 6;
+    const TAP_MS = 500;
     const STEP = 1.25;
     const WHEEL_RATE = 0.0016;
     const DOUBLE_K = 2.5;
@@ -57,17 +59,18 @@
             [["−", "Zoom out", () => centre(1 / STEP)], ["+", "Zoom in", () => centre(STEP)], ["Fit", "Fit to screen", fit], ["100%", "Actual size", actual], ["Close", "Close viewer", close]]
                 .forEach(([text, aria, fn]) => add(bar, button({ label: text, ariaLabel: aria, kind: text === "Close" ? "solid" : "ghost", onClick: fn })));
             const hint = el("div", { position: "absolute", left: px(SPACE.md), bottom: px(SPACE.md), color: "#c7ccd4", fontFamily: FONT.sans, fontSize: px(FONT.sm), pointerEvents: "none" });
-            hint.textContent = `${caption} · scroll or pinch to zoom · drag to move · double-click to zoom · Esc to close`;
+            hint.textContent = `${caption} · scroll or pinch to zoom · drag to move · click to close · Esc to close`;
             add(root, stage, bar, hint);
 
             const pointers = new Map();
+            let down = null;
             let pinch = 0;
             on(stage, "wheel", (evt) => {
                 evt.preventDefault();
                 const box = stage.getBoundingClientRect();
                 zoomAt(Math.exp(-evt.deltaY * WHEEL_RATE * (evt.ctrlKey ? 4 : 1)), evt.clientX - box.left, evt.clientY - box.top);
             }, { passive: false });
-            on(stage, "pointerdown", (evt) => { pointers.set(evt.pointerId, { x: evt.clientX, y: evt.clientY }); stage.setPointerCapture(evt.pointerId); stage.style.cursor = "grabbing"; pinch = 0; });
+            on(stage, "pointerdown", (evt) => { pointers.set(evt.pointerId, { x: evt.clientX, y: evt.clientY }); stage.setPointerCapture(evt.pointerId); stage.style.cursor = "grabbing"; pinch = 0; down = { x: evt.clientX, y: evt.clientY, t: performance.now() }; });
             on(stage, "pointermove", (evt) => {
                 const last = pointers.get(evt.pointerId);
                 if (!last) return;
@@ -80,13 +83,14 @@
                 if (pinch) zoomAt(gap / pinch, (a.x + b.x) / 2 - box.left, (a.y + b.y) / 2 - box.top);
                 pinch = gap;
             });
-            const lift = (evt) => { pointers.delete(evt.pointerId); pinch = 0; stage.style.cursor = "grab"; };
+            const lift = (evt) => {
+                const tap = down && pointers.size === 1 && evt.type === "pointerup" && Math.hypot(evt.clientX - down.x, evt.clientY - down.y) < TAP_PX && performance.now() - down.t < TAP_MS;
+                pointers.delete(evt.pointerId); pinch = 0; stage.style.cursor = "grab";
+                if (pointers.size === 0) down = null;
+                if (tap) close();
+            };
             on(stage, "pointerup", lift);
             on(stage, "pointercancel", lift);
-            on(stage, "dblclick", (evt) => {
-                const box = stage.getBoundingClientRect();
-                if (view.k > fitK() * 1.5) fit(); else zoomAt(DOUBLE_K, evt.clientX - box.left, evt.clientY - box.top);
-            });
             on(root, "keydown", (evt) => {
                 const keys = { Escape: close, "+": () => centre(STEP), "=": () => centre(STEP), "-": () => centre(1 / STEP), 0: fit };
                 if (keys[evt.key]) { evt.preventDefault(); evt.stopPropagation(); keys[evt.key](); }

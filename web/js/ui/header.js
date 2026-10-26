@@ -49,6 +49,14 @@
         return node;
     }
 
+    // Jumps straight to the build guide in the explorer.
+    function buildLink() {
+        const node = navLink("explore", "Build");
+        node.href = "#/explore?tab=build";
+        node._route = "";
+        return node;
+    }
+
     function themeSwitch() {
         const node = button({ label: "", onClick: () => setState({ theme: state.theme === "dark" ? "light" : "dark" }), ariaLabel: "Switch between dark and light theme" });
         paint(node, () => { node.textContent = state.theme === "dark" ? "Dark" : "Light"; });
@@ -62,7 +70,7 @@
         });
         themed(bar, { background: "surface", borderBottomColor: "line" });
         const nav = el("nav", { display: "flex", alignItems: "center", gap: px(SPACE.xs), overflowX: "auto", flexGrow: "1" }, { "aria-label": "Pages" });
-        PAGES.forEach(([route, text]) => add(nav, navLink(route, text)));
+        PAGES.forEach(([route, text]) => { add(nav, navLink(route, text)); if (route === "explore") add(nav, buildLink()); });
         add(nav, externalLink());
         watchViewport((viewport) => {
             nav.style.order = isPhone(viewport) ? "3" : "0";

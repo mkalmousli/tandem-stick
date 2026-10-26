@@ -13,10 +13,10 @@ function layerLines() {
 function boardTexture() {
     const S = 48, W = DIM.pcbW * S, D = DIM.pcbD * S, c = document.createElement("canvas"); c.width = W; c.height = D;
     const g = c.getContext("2d"), px = (x) => (x + DIM.pcbW / 2) * S, py = (z) => (z + DIM.pcbD / 2) * S;
-    g.fillStyle = "#0d5230"; g.fillRect(0, 0, W, D);
+    g.fillStyle = "#1c1708"; g.fillRect(0, 0, W, D);
     for (let i = 0; i < 4000; i++) { g.fillStyle = `rgba(0,0,0,${Math.random() * .05})`; g.fillRect(Math.random() * W, Math.random() * D, 2, 2); }
     const hub = CHIPS.find((p) => p.id === "esp").pos;
-    g.strokeStyle = "#1d7a49"; g.lineWidth = .35 * S; g.lineCap = "round"; g.lineJoin = "round";
+    g.strokeStyle = "#7a5410"; g.lineWidth = .35 * S; g.lineCap = "round"; g.lineJoin = "round";
     CHIPS.filter((p) => p.id !== "esp").forEach((p, i) => { g.beginPath(); g.moveTo(px(p.pos[0]), py(p.pos[1])); g.lineTo(px((p.pos[0] + hub[0]) / 2), py(p.pos[1])); g.lineTo(px((p.pos[0] + hub[0]) / 2), py(hub[1] + (i ? 3 : -3))); g.lineTo(px(hub[0]), py(hub[1] + (i ? 3 : -3))); g.stroke(); });
     [-4, -2, 0, 2, 4].forEach((z, i) => { g.beginPath(); g.moveTo(px(-DIM.pcbW / 2 + 1), py(z)); g.lineTo(px(-DIM.pcbW / 2 + 5 + i), py(z)); g.lineTo(px(hub[0] - 6), py(z * .5)); g.stroke(); });
     g.fillStyle = "#e8c86a"; PASSIVES.forEach((p) => [-1, 1].forEach((s) => g.fillRect(px(p.pos[0]) + s * p.size[0] * .7 - .3 * S, py(p.pos[1]) - .35 * S, .6 * S, .7 * S)));

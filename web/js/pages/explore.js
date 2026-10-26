@@ -122,7 +122,7 @@
             viewer.setInset(hidden ? 0 : width + pad);
             Object.assign(grip.style, { left: "0px", display: hidden ? "none" : "block" });
             Object.assign(panel.style, { position: "absolute", display: hidden ? "none" : "flex", right: px(pad), top: px(pad + SIZE.control + SPACE.sm), width: px(width), height: px(stageH - 2 * pad - SIZE.control - SPACE.sm), zoom: "1", overflowY: "hidden" });
-            panel.lastChild.style.overflowY = "auto";
+            panel.bodyNode.style.overflowY = "auto";
         };
         const place = (viewport) => {
             const narrow = isNarrow(viewport);
@@ -134,7 +134,7 @@
             Object.assign(root.style, { gap: px(pad), padding: px(pad) });
             Object.assign(stage.style, { width: px(inner), height: px(stageH) });
             Object.assign(size, { stageW: inner, stageH, pad, over: !narrow });
-            if (narrow) { if (panel.parentNode !== root) add(root, panel); if (toggle.parentNode) toggle.remove(); panel.lastChild.style.overflowY = "visible"; }
+            if (narrow) { if (panel.parentNode !== root) add(root, panel); if (toggle.parentNode) toggle.remove(); panel.bodyNode.style.overflowY = "visible"; }
             else { if (panel.parentNode !== stage) add(stage, panel);
             if (grip.parentNode !== panel) add(panel, grip); if (toggle.parentNode !== stage) add(stage, toggle); }
             Object.assign(toggle.style, { position: "absolute", right: px(pad), top: px(pad) });

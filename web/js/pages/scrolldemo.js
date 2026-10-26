@@ -9,7 +9,7 @@
     const { STEPS } = app.story.steps;
     const { SCENARIOS, findScenario } = app.data;
 
-    const STEP_VH = 0.7;          // scroll distance per step, as a share of the viewport height
+    const STEP_VH = 0.45;          // scroll distance per step, as a share of the viewport height
     const MIN_STAGE = 360;
     const MAX_STAGE = 640;
     const CARD_W = 360;

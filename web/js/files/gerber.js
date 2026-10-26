@@ -2,8 +2,8 @@
 (() => {
     const SCALE = 1e-6; // coordinates are 4.6 metric: millionths of a mm
     const LAYER_STYLE = [
-        ["B_Cu", "#3b82f6", 0.7], ["In2_Cu", "#a78bfa", 0.35], ["In1_Cu", "#34d399", 0.35], ["F_Cu", "#ff8a3d", 0.85],
-        ["B_Mask", "#22c55e", 0.0], ["F_Mask", "#22c55e", 0.0], ["B_Paste", "#cbd5e1", 0.5], ["F_Paste", "#cbd5e1", 0.5],
+        ["B_Cu", "#c98a14", 0.7], ["In2_Cu", "#8a6a2a", 0.35], ["In1_Cu", "#b58a30", 0.35], ["F_Cu", "#ffb224", 0.9],
+        ["B_Mask", "#ffb224", 0.0], ["F_Mask", "#ffb224", 0.0], ["B_Paste", "#cbd5e1", 0.5], ["F_Paste", "#cbd5e1", 0.5],
         ["B_Silkscreen", "#e2e8f0", 0.9], ["F_Silkscreen", "#f8fafc", 0.95], ["Edge_Cuts", "#ffd54a", 1],
     ];
     const DIM_ALPHA = 0.22;

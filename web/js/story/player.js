@@ -5,8 +5,8 @@
     const { createStage } = app.story.stage;
     const { newModel, applyAction, drawScreen, drawHost } = app.story.screens;
 
-    const STEP_SECONDS = 9;
-    const INTERACT_SECONDS = 16;
+    const STEP_SECONDS = 5.5;
+    const INTERACT_SECONDS = 10;
     const PULSE_SECONDS = 0.9;
     const PULSE_LIFT = 0.8;
     const SCREEN_MS = 90;

@@ -7,7 +7,7 @@
     const { W, H, createScreen } = app.story.screens;
 
     const COLOR = {
-        case: 0xdcdee3, caseTop: 0xd99a1e, pcb: 0x14532d, gold: 0xd9b45a, chip: 0x15171b, metal: 0xc7ccd4, dark: 0x2b2f38, body: 0x2f3440, key: 0x59616f,
+        case: 0xe9e2d0, caseTop: 0xffb224, pcb: 0x1c1708, gold: 0xffb224, chip: 0x15171b, metal: 0xc7ccd4, dark: 0x2b2f38, body: 0x2f3440, key: 0x59616f,
         led: { off: 0x30343c, white: 0xffffff, blue: 0x4aa3ff, green: 0x45e08a, red: 0xff5a5a, violet: 0xb48cff },
         radio: 0xffb224,
     };

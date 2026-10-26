@@ -134,6 +134,7 @@
         };
         draw();
         subscribe((patch) => { if ("tab" in patch || KEYS[state.tab].some((key) => key in patch)) draw(); });
+        panel.bodyNode = body;
         return add(panel, tabs, body, foot);
     }
 

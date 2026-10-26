@@ -9,7 +9,7 @@ const SCRIPTS = [
     "js/ui/header.js", "js/ui/notice.js", "js/ui/page.js",
     "js/explorer/state.js",
     "js/scene/studio.js", "js/scene/materials.js", "js/scene/ports.js", "js/scene/enclosure.js", "js/scene/board.js", "js/scene/flow.js", "js/scene/fleet.js", "js/scene/model.js", "js/scene/orbit.js",
-    "js/files/gerber.js", "js/explorer/guide.js", "js/explorer/files.js", "js/explorer/actions.js", "js/explorer/viewer.js", "js/explorer/build.js", "js/explorer/panel.js", "js/explorer/link.js",
+    "js/files/gerber.js", "js/explorer/guide.js", "js/explorer/files.js", "js/explorer/actions.js", "js/explorer/viewer.js", "js/explorer/buildart.js", "js/explorer/build.js", "js/explorer/panel.js", "js/explorer/link.js",
     "js/story/screens.js", "js/story/stage.js", "js/story/steps.js", "js/story/player.js",
     "js/pages/scrolldemo.js", "js/pages/home.js", "js/pages/explore.js", "js/pages/downloads.js",
     "js/app.js",
