@@ -1,6 +1,5 @@
-"""The logo mark, raised on the lid: linked diamonds and the word TANDEM in our own letters. Joined into the lid mesh."""
+"""The logo mark, raised on the lid: the word TANDEM, small and spaced out, in our own letters. Joined into the lid mesh."""
 M["mark"] = principled("mark", "#2a1a00", 0.5)
-M["cream"] = principled("cream", "#fff1c4", 0.4)
 TOP = D["wallTop"] + D["wall"]
 
 def raised(name, mat, verts, height):
@@ -17,13 +16,9 @@ def raised(name, mat, verts, height):
     obj.data.update()
     return obj
 
-def diamond(cx, cy, r):
-    return [(cx - r, cy), (cx, cy - r * 0.8), (cx + r, cy), (cx, cy + r * 0.8)]
-
-# Two linked diamonds (the tandem pair) and the name in our own angular letters, big and dark on the yellow lid.
+# The name in our own angular letters, small and spaced out on the yellow lid.
 exec(open(os.path.join(HERE, "glyphs.py")).read())
-parts = [raised("m1", M["mark"], diamond(-11.6, 0, 5.2), 0.45), raised("m2", M["cream"], diamond(-11.6, 0, 2.9), 0.55),
-         raised("m3", M["cream"], diamond(-7.4, 0, 3.4), 0.5), raised("m4", M["mark"], diamond(-7.4, 0, 1.6), 0.6)]
+parts = []
 
 def stroke(name, a, b, width):
     dx, dy = b[0] - a[0], b[1] - a[1]
@@ -39,7 +34,7 @@ def word(text, x0, y0, sx, sy, pitch, width):
             pt = lambda v: (x0 + at * pitch + v[0] * sx, y0 + v[1] * sy)
             parts.append(stroke(f"{text}{at}{k}", pt(a), pt(b), width))
 
-word("TANDEM", -3.4, -3.4, 1.3, 1.7, 3.2, 1.0)
+word("TANDEM", -11.9, -2.4, 0.9, 1.2, 4.4, 0.7)
 bpy.ops.object.select_all(action="DESELECT")
 for obj in parts + [lid]:
     obj.select_set(True)

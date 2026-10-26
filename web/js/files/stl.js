@@ -12,16 +12,10 @@
     const C = app.files.common;
     const { load, note, frame, previewWidth, GERBER_DIR } = C;
     const BACKDROP = "#0b1220", SPIN_SPEED = 0.006, STL_COLOR = 0xffb224;
-    // The lid is coloured like the 3D view: yellow plate, cream diamond faces, dark ink for the rest of the raised mark.
-    const PLATE_TOP = 2.05, CREAM = new THREE.Color(0xfff1c4), INK = new THREE.Color(0x2a1a00), PLATE = new THREE.Color(0xffc43a);
-    const within = (x, y, cx, r) => Math.abs(x - cx) / r + Math.abs(y) / (r * 0.8) <= 1.02;
-    const lidPaint = (p, at) => {
-        const x = (p[at] + p[at + 3] + p[at + 6]) / 3, y = (p[at + 1] + p[at + 4] + p[at + 7]) / 3, z = (p[at + 2] + p[at + 5] + p[at + 8]) / 3;
-        if (z <= PLATE_TOP) return PLATE;
-        // Flat diamond tops sit at distinct heights: 2.45 dark, 2.5 cream, 2.55 cream, 2.6 dark.
-        if (p[at + 2] === p[at + 5] && p[at + 5] === p[at + 8] && x < -4.2 && z > 2.4) return Math.abs(z - 2.5) < 0.03 || Math.abs(z - 2.55) < 0.03 ? CREAM : INK;
-        return within(x, y, -11.6, 2.9) || (within(x, y, -7.4, 3.4) && !within(x, y, -7.4, 1.6)) ? CREAM : INK;
-    };
+    
+    const PLATE_TOP = 2.05, INK = new THREE.Color(0x2a1a00), PLATE = new THREE.Color(0xffc43a);
+    // Plate yellow, raised lettering dark.
+    const lidPaint = (p, at) => ((p[at + 2] + p[at + 5] + p[at + 8]) / 3 <= PLATE_TOP ? PLATE : INK);
     const CASE = { "mechanical/case-lid.stl": { color: 0xffffff, paint: lidPaint }, "mechanical/case-tray.stl": { color: 0xf0a010 } };
 
     function parseStl(buf, paint) {
