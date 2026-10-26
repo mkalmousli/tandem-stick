@@ -7,16 +7,13 @@
     const { label } = app.ui.text;
     const { actions, createViewer, createPanel, link } = app.ex;
     const { button } = app.ui.button;
-    const PHONE_ZOOM = 1.18;
     const { TOUR } = app.data;
 
     const DEFAULTS = { tab: "tour", tour: 0, build: 0, buildMode: null, guide: "glance", file: "board", spin: true, selected: null, isolate: false, mode: "target", explode: 1, layers: { usb: true, ctrl: true, power: true, radio: true } };
     const PRESET_KEYS = { 1: "front", 2: "rear", 3: "top", 4: "iso" };
     const TOAST_MS = 2200;
     const MIN_STAGE_H = 420;
-    const NARROW_STAGE = 0.62;
     const NARROW_MIN = 380;
-    const NARROW_ASPECT = 1.2;
     const HELP = "1-4 views · E explode · I isolate · S spin · T tour · [ ] part · F focus · C copy link";
 
     function toastBox(parent) {
@@ -103,6 +100,9 @@
         link.readLink(query);
         link.syncLink();
 
+        // On phones the 3D view only gets the part the sheet leaves free.
+        const sheet = app.ex.sheet.createSheet(panel, (visible) => viewer.resize(size.stageW, Math.round(Math.max(size.stageH - visible, size.stageH * 0.3))));
+        subscribe((patch) => { if ("tab" in patch || patch.selected) sheet.open(); }); // picking a tab or a part shows its content
         let hidden = false;
         let wanted = savedWidth();
         let size = { stageW: 1, stageH: 1, pad: SPACE.lg, over: true, panelW: PANEL_DEFAULT };
@@ -114,7 +114,7 @@
             if (!over) {
                 viewer.setInset(0);
                 grip.style.display = "none";
-                Object.assign(panel.style, { position: "static", display: "flex", width: px(stageW / PHONE_ZOOM), height: "auto", zoom: String(PHONE_ZOOM) });
+                Object.assign(panel.style, { position: "absolute", display: "flex", right: "0px", top: "auto", width: "auto", zoom: "1" });
                 return;
             }
             const width = Math.round(Math.max(PANEL_MIN, Math.min(wanted, stageW * PANEL_SHARE)));
@@ -130,16 +130,16 @@
             const top = root.getBoundingClientRect().top + window.scrollY;
             const free = Math.max(MIN_STAGE_H, viewport.h - top - 2 * pad);
             const inner = viewport.w - 2 * pad;
-            const stageH = narrow ? Math.round(Math.max(NARROW_MIN, Math.min(viewport.h * NARROW_STAGE, inner * NARROW_ASPECT))) : free;
+            const stageH = narrow ? Math.round(Math.max(NARROW_MIN, viewport.h - top - 2 * pad)) : free;
             Object.assign(root.style, { gap: px(pad), padding: px(pad) });
             Object.assign(stage.style, { width: px(inner), height: px(stageH) });
             Object.assign(size, { stageW: inner, stageH, pad, over: !narrow });
-            if (narrow) { if (panel.parentNode !== root) add(root, panel); if (toggle.parentNode) toggle.remove(); panel.bodyNode.style.overflowY = "visible"; }
-            else { if (panel.parentNode !== stage) add(stage, panel);
-            if (grip.parentNode !== panel) add(panel, grip); if (toggle.parentNode !== stage) add(stage, toggle); }
+            if (panel.parentNode !== stage) add(stage, panel);
+            if (narrow) { if (toggle.parentNode) toggle.remove(); panel.bodyNode.style.overflowY = "auto"; sheet.attach(); sheet.layout(stageH); }
+            else { sheet.detach(); if (grip.parentNode !== panel) add(panel, grip); if (toggle.parentNode !== stage) add(stage, toggle); }
             Object.assign(toggle.style, { position: "absolute", right: px(pad), top: px(pad) });
             placePanel();
-            viewer.resize(inner, stageH);
+            if (!narrow) viewer.resize(inner, stageH);
         };
         watchViewport(place);
         requestAnimationFrame(() => place(app.state.state.viewport)); // once attached, the top offset is known

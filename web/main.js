@@ -28,7 +28,7 @@ const GROUPS = {
         "js/scene/board.js", "js/scene/flow.js", "js/scene/fleet.js", "js/scene/blendermodel.js", "js/scene/stick.js", "js/scene/model.js", "js/scene/orbit.js", "js/scene/showcase.js", "js/scene/mini.js", "js/scene/miniscenes.js", "js/scene/inputscenes.js",
     ],
     files: ["js/files/gerber.js", "js/files/common.js", "js/files/stl.js", "js/files/board.js", "js/files/sheet.js", "js/files/tables.js", "js/files/bundle.js", "js/files/layers.js", "js/files/list.js", "js/files/thumbs.js", "js/files/preview.js"],
-    explore: ["js/explorer/guide.js", "js/explorer/filecards.js", "js/explorer/relatedfiles.js", "js/explorer/files.js", "js/explorer/actions.js", "js/explorer/viewer.js", "js/explorer/buildart.js", "js/explorer/buildsteps.js", "js/explorer/build.js", "js/explorer/panel.js", "js/explorer/link.js", "js/pages/explore.js"],
+    explore: ["js/explorer/guide.js", "js/explorer/filecards.js", "js/explorer/relatedfiles.js", "js/explorer/files.js", "js/explorer/actions.js", "js/explorer/viewer.js", "js/explorer/buildart.js", "js/explorer/buildsteps.js", "js/explorer/build.js", "js/explorer/panel.js", "js/explorer/sheet.js", "js/explorer/link.js", "js/pages/explore.js"],
 };
 const DEPS = { files: ["three"], explore: ["three", "files"] };
 const loading = new Map();
@@ -71,3 +71,13 @@ function fetchGroup(name) {
 
 app.need = (...names) => Promise.all(names.map(fetchGroup));
 fetchGroup("base").then(() => app.start());
+
+// Zoom stays off for good: the viewport meta covers most browsers, these cover iOS pinch and double-tap.
+["gesturestart", "gesturechange", "gestureend"].forEach((type) => document.addEventListener(type, (evt) => evt.preventDefault()));
+document.documentElement.style.touchAction = "manipulation";
+
+// Text is not selectable or copyable by touch or mouse; form fields keep working.
+const noSelect = document.createElement("style");
+noSelect.textContent = "body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}input,textarea{-webkit-user-select:text;user-select:text}";
+document.head.appendChild(noSelect);
+document.addEventListener("copy", (evt) => { if (!/INPUT|TEXTAREA/.test(evt.target.tagName)) evt.preventDefault(); });
