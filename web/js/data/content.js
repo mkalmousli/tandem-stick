@@ -15,7 +15,7 @@
 
     const ARCHITECTURE = {
         title: "Block diagram: computer, host stick, radio, target stick, target machine",
-        boxes: [["Your computer", "web page"], ["Host stick", "USB control device"], ["Target stick", "USB keyboard, mouse, drive"], ["Target machine", "no software"]],
+        boxes: [["Your computer", "web page"], ["Host stick", "USB control device"], ["Target stick", "USB keyboard, mouse, drive"], ["Target machine", "nothing installed"]],
         links: ["USB-A", "radio", "USB-A"],
     };
 
@@ -158,45 +158,32 @@
     };
 
     const HOME = {
-        title: "One stick controls many PCs.",
-        lead: "Plug one USB stick into your computer and one into each machine you want to control. Drive one machine, several, or all at once, over radio. Nothing to install on the others. Use our app or script it with the API.",
-        facts: [["46.5 mm", "About half a credit card, plug included"], ["0 buttons", "Nothing to press or configure"], ["Scriptable", "Own app and open API"], ["~€10", "Parts for one stick"]],
+        title: "Control any PC with a USB stick.",
+        lead: "Plug one stick into your computer. Plug another into the PC you want to control. Your keyboard and mouse now work on it. Like a KVM, but tiny and wireless.",
         steps: [
-            ["Build or order sticks", "Order the board, solder eight parts, print the case. Every file is on the Downloads page."],
-            ["Plug one into your computer", "It is the host. Your computer sees a normal USB device."],
-            ["Pair the others once", "Plug a target stick into each machine you want to control. Pairing is one short step."],
-            ["Type once, control all", "Your keyboard and mouse reach every paired machine at once. Or run a script."],
-        ],
-        why: [
-            ["Nothing to install", "The target only sees a normal USB keyboard, mouse or drive. No app, no driver, no account."],
-            ["Works on anything with USB", "Windows, macOS, Linux, kiosks, signage players, locked-down machines, even a BIOS screen."],
-            ["No cables, no network", "Sticks talk by radio directly. No Wi-Fi, no cloud, no remote desktop on the targets."],
-            ["Same stick everywhere", "Host and target are the same board. The role comes from pairing, not from a different part."],
-            ["One, many or all", "Send input to a single machine, a chosen group, or every paired one at once. Planned: the firmware is not written yet."], ["Two-way link", "Targets answer back, so the host knows a keystroke arrived. The radio is two-way but not full duplex: it sends and listens in turns."], ["App and API", "Control it from our app, or script it: send keys, clicks and commands from your own code."], ["Open and hackable", "Schematic, board, case and firmware plan are open. Change anything and build your own."],
-            ["Honest status", "This is an untested DIY design. Nothing here is sold, and nobody promises it works until you test it."],
+            ["Plug in the first stick", "Put it in your own computer. It is your remote."],
+            ["Plug in the second stick", "Put it in the PC you want to control. It sees a normal keyboard and mouse."],
+            ["Pair them once", "A short one-time step. After that they find each other."],
+            ["Type and click", "Your input shows up on the other PC. Add more sticks for more PCs."],
         ],
         cases: [
-            ["Home office", "Everyday users", "One keyboard and mouse drive your desktop, mini PC and laptop, even when each runs a different system.", "home"],
-            ["Automated installs", "IT, labs, repair shops", "Replay a keystroke script to install Windows or Linux on many bare machines at once, with no network boot.", "install"],
-            ["Present on every screen", "Teachers, speakers", "Click through slides once and every classroom or lobby screen follows.", "present"],
-            ["Fix many computers", "IT admins, labs", "Run the same command on a row of machines with no remote tools installed.", "admin"],
-            ["Shop and sign displays", "Shops, cafés", "Update menus and promos across every screen without visiting each one.", "kiosk"],
-            ["Test on every system", "Developers, QA", "Drive a bench of phones, boxes and PCs together while you test.", "qa"],
-            ["Fill in spreadsheets", "Offices, data entry", "Type a value once and enter it on several machines.", "office"],
-            ["Server rooms", "Sysadmins", "Reach a BIOS or boot menu on racks that have no KVM."],
-            ["Streaming and video walls", "Creators, events", "Start the same scene, clip or playlist on many players at once."],
-            ["Gaming and sim rigs", "Hobbyists", "Run one input across a group of PCs for local test sessions."],
-            ["Classrooms and workshops", "Teachers", "Demonstrate a task once and let the whole room's machines follow."],
-            ["Accessibility", "Assistive setups", "Use one adaptive device to drive every machine at home or work."],
-            ["Demo and retail units", "Stores, trade shows", "Reset or restart every demo machine from the front desk."],
+            ["Home and office", "Everyone", "One keyboard and mouse for your desktop, laptop and mini PC.", "home"],
+            ["Install on many PCs", "IT, labs, repair shops", "Run the same Windows or Linux setup on many bare PCs at once.", "install"],
+            ["Present on every screen", "Teachers, speakers", "Click once. Every screen follows.", "present"],
+            ["Fix many computers", "IT admins", "Run one command on a row of PCs. Nothing to install on them.", "admin"],
+            ["Shop and sign displays", "Shops, cafés", "Update every screen from one desk.", "kiosk"],
+            ["Test on every system", "Developers, QA", "Drive a bench of PCs and boxes from your test code.", "qa"],
+            ["Fill in spreadsheets", "Offices", "Type a value once. Enter it on several PCs.", "office"],
+            ["Server rooms", "Sysadmins", "Reach the BIOS or boot menu on racks with no KVM."],
+            ["Streaming and video walls", "Creators, events", "Start the same clip on many players."],
+            ["Accessibility", "Assistive setups", "One adaptive device drives every PC."],
         ],
         faq: [
-            ["Is it for sale?", "No. This is a DIY design with open files. You order the board and build it yourself."],
-            ["Does it work yet?", "Not proven. No board has been built or checked, and the firmware is not released. Treat it as a design to test."],
-            ["Do I need Wi-Fi?", "No. The sticks use ESP-NOW, a direct radio link. There is no router, cloud or account."],
-            ["What is the difference between host and target?", "Nothing in hardware. The stick plugged into your computer is the host; the ones in the machines you control are targets."],
-            ["How many targets can one host drive?", "The plan is several at once. The real limit is not measured until the firmware exists."],
-            ["Is the radio link secure?", "The plan is encrypted pairing with per-pair keys. It is not audited, so do not use it for anything sensitive yet."],
+            ["Is it for sale?", "No. It is a DIY design with open files. You build it yourself."],
+            ["Does it work yet?", "Not proven. No board is built and the firmware is not released. Treat it as a design to test."],
+            ["Do I need Wi-Fi?", "No. The sticks talk to each other by radio. No router, no cloud, no account."],
+            ["Is it safe?", "The plan is encrypted pairing. It is not audited yet, so keep it away from anything sensitive."],
+            ["How many PCs?", "The plan is about 20 per host. Not measured yet."],
         ],
     };
 

@@ -28,22 +28,23 @@
     }
 
     const IDEAS = [
-        ["Scripts and macros", "Type text, press shortcuts, move and click from a script. Record once, replay on any machine."],
-        ["Mass installs", "Walk Windows or Linux setup on a whole shelf of bare machines with the same keystrokes."],
-        ["One, a group or everyone", "Name your machines and send to one, a chosen group, or all at once."],
-        ["More than keys", "A stick can act as a keyboard, mouse, drive, serial port, network card or audio device, so even slow jobs can be automated."],
-        ["Schedules and triggers", "Run a script at a set time, from a hotkey, a webhook or a CI job."],
-        ["Test benches", "Drive PCs, kiosks and boards from your test code and check what happened."],
-        ["Signage and demo fleets", "Restart or reset every screen from one desk. No visits, no remote desktop."],
-        ["Accessibility", "Map a switch, joystick or voice command to keys and clicks on every machine."],
-        ["Bring your own tools", "Any language that can call the API: Python, Node, shell, or a button on a web page."],
+        ["Scripts and macros", "Type, press keys, move and click from a script. Record once. Replay anywhere."],
+        ["Mass installs", "Set up Windows or Linux on many bare PCs with the same keys."],
+        ["One, a group or everyone", "Name your PCs. Send to one, a group, or all."],
+        ["More than keys", "A stick can be a keyboard, mouse, drive, serial port, network card or audio device. Even slow jobs can be automated."],
+        ["Schedules and triggers", "Run a script at a set time, from a hotkey or from a CI job."],
+        ["Test benches", "Drive PCs and kiosks from your test code."],
+        ["Signage and demo fleets", "Reset every screen from one desk. No visits."],
+        ["Accessibility", "Map a switch or joystick to keys and clicks on every PC."],
+        ["AI agents", "Let an agent use any PC through a real keyboard and mouse. No software on that PC."],
+        ["Bring your own tools", "Python, Node, shell, or a button on a web page."],
     ];
 
     function software() {
         const code = el("pre", { margin: "0", padding: px(SPACE.md), borderRadius: px(RADIUS.sm), fontFamily: FONT.mono, fontSize: px(FONT.sm), overflowX: "auto", lineHeight: "1.6" });
         highlight(code, SAMPLE);
         app.dom.themed(code, { background: "raised", color: "text" });
-        const head = add(stack(SPACE.xs), heading(3, "Your code, many machines"), para("Our app is the easy way in. The API is for everything else.", { size: FONT.sm, tone: "muted" }));
+        const head = add(stack(SPACE.xs), heading(3, "Your code, many machines"), para("Use our app for the easy way. Use the API for the rest.", { size: FONT.sm, tone: "muted" }));
         const grid = cells(IDEAS, 260, ([title, text]) => card(heading(3, title), para(text, { size: FONT.sm, tone: "muted" })));
         return add(stack(SPACE.lg), add(stack(SPACE.sm), head, code, label("Planned: firmware, app and API are not released yet.", { size: FONT.xs, tone: "muted" })), grid);
     }

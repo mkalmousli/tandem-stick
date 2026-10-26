@@ -7,7 +7,7 @@ const GROUPS = {
         "js/data/product.js", "js/data/content.js",
         "js/ui/text.js", "js/ui/button.js", "js/ui/layout.js", "js/ui/card.js", "js/ui/copy.js", "js/ui/table.js", "js/ui/svg.js", "js/ui/review.js", "js/ui/download.js", "js/ui/zoom.js", "js/ui/live3d.js",
         "js/ui/wordmark.js", "js/ui/header.js", "js/ui/notice.js", "js/ui/page.js", "js/explorer/state.js",
-        "js/pages/homeui.js", "js/pages/homefaq.js", "js/pages/homehero.js", "js/ui/sections.js", "js/pages/features.js", "js/pages/stories.js", "js/pages/software.js", "js/pages/home.js", "js/pages/downloads.js", "js/app.js",
+        "js/pages/homeui.js", "js/pages/homefaq.js", "js/pages/sizecompare.js", "js/pages/homehero.js", "js/ui/sections.js", "js/pages/features.js", "js/pages/stories.js", "js/pages/software.js", "js/pages/home.js", "js/pages/downloads.js", "js/app.js",
     ],
     three: [
         "vendor/three.js", "js/scene/glbparse.js", "js/scene/glb.js", "js/scene/studio.js", "js/scene/materials.js", "js/scene/ports.js", "js/scene/enclosure.js",

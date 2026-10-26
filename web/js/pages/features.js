@@ -4,15 +4,13 @@
 
     // `scene` shows a simple looping scene; `ids` shows those parts of the real model (null = all).
     const FEATURES = [
-        { name: "A keyboard", scene: "keyboard", text: "Each stick shows up as an ordinary USB keyboard. What you type on the host is typed on every paired computer, including in a BIOS or boot menu." },
-        { name: "A mouse", scene: "mouse", text: "Move and click once. The pointer moves and clicks on every paired machine at the same time." },
-        { name: "A microphone", scene: "microphone", text: "The stick can present itself as a USB microphone, so a machine can take sound from the host side without extra cables." },
-        { name: "A speaker", scene: "speaker", text: "It can also present itself as a USB speaker, so sound from a machine can be played out on the host side." },
-        { name: "All in one", ids: null, view: { theta: 0.7, phi: 1.05, radius: 95 }, text: "Lid, board and case in one small stick. The USB-A plug is the only connector. Nothing to install on the computer it is plugged into." },
-        { name: "Radio, no cables", ids: ["pcb"], view: { theta: 0.3, phi: 0.5, radius: 95, y: 3 }, text: "The board carries an ESP32-S3 radio. One host stick talks to the others over encrypted radio, so a keystroke typed once reaches every paired stick." },
-        { name: "Reliable delivery", scene: "pair", text: "The radio layer acknowledges what it receives and resends what was lost, so a keystroke is not silently dropped on the way to a stick." },
-        { name: "Plain USB-A", ids: ["p-plug"], view: { theta: 1.1, phi: 1.15, radius: 70, x: 14, y: 6 }, text: "Each stick plugs into any machine with a USB port. There is nothing to install on it." },
-        { name: "Printable case", ids: ["case-tray", "case-lid"], view: { theta: 0.8, phi: 0.95, radius: 110, y: 3 }, text: "A two-part snap-fit case you can print at home. The lid carries the Tandem mark and a small window for the status light." },
+        { name: "Works in the BIOS", scene: "keyboard", text: "Real USB hardware, like a KVM.", points: [["#2f9e6b", "BIOS and boot menus"], ["#4f86f7", "Installers and recovery"], ["#e0a01a", "Locked-down PCs"]] },
+        { name: "Automate it", scene: "mouse", text: "Run it by hand, or let a script do the work.", points: [["#4f86f7", "Script keys and clicks from your PC"], ["#2f9e6b", "Automatic installs of Windows or Linux"], ["#a06cf0", "AI agents can drive it too"], ["#e0a01a", "Nothing to install on the other PC"]] },
+        { name: "One, many or all", scene: "fleet", text: "Control one PC, a group, or all of them at once. Planned: the firmware is not written yet." },
+        { name: "No cables", ids: ["pcb"], view: { theta: 0.3, phi: 0.5, radius: 95, y: 3 }, text: "The sticks talk by encrypted radio. No Wi-Fi or router. No wires across the room." },
+        { name: "Never drops a key", scene: "pair", text: "Each key is confirmed and resent if lost. What you type is what arrives." },
+        { name: "A USB forwarder", scene: "microphone", text: "It passes USB between PCs over radio, not just keys.", points: [["#2f9e6b", "Keyboard, mouse, drive"], ["#4f86f7", "Serial, network, audio"], ["#e0a01a", "Screen over HDMI: an idea, very slow"]] },
+        { name: "Print the case", ids: ["case-tray", "case-lid"], view: { theta: 0.8, phi: 0.95, radius: 110, y: 3 }, text: "A snap-fit case you can print at home. Small and yellow, with one light for status." },
     ];
 
     function features() {

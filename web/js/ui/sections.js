@@ -1,12 +1,23 @@
 // Text sections down the page with one sticky 3D view beside them (on top of them on a phone); the section nearest a reading line decides what the view shows.
 (() => {
     const { el, add, on, themed } = app.dom;
-    const { SPACE, FONT } = app.styles;
+    const { SPACE, FONT, px } = app.styles;
     const { label, para, heading } = app.ui.text;
-    const { stack } = app.ui.layout;
+    const { stack, row } = app.ui.layout;
 
     const PHONE = 720;
     const HEADER = 86;
+
+    // Short colour-coded lines under a section's text: [[hex colour, text], ...].
+    function points(list) {
+        if (!list) return null;
+        const box = stack(SPACE.xs);
+        list.forEach(([hue, text]) => {
+            const dot = el("span", { width: px(10), height: px(10), borderRadius: "50%", background: hue, flexShrink: "0" });
+            add(box, add(row(SPACE.sm, { alignItems: "center" }), dot, label(text, { size: FONT.sm, weight: FONT.bold })));
+        });
+        return box;
+    }
 
     // items: [{ name, text }]. `mount(art, narrow)` puts the view in the sticky box and returns showAt(idx); its optional `.layout(narrow)` runs when the window crosses the phone width.
     function stickySections(items, mount) {
@@ -16,7 +27,7 @@
         const narrowNow = () => window.innerWidth < PHONE;
         const sections = items.map((item, at) => {
             const section = stack(SPACE.sm);
-            add(section, label(String(at + 1).padStart(2, "0"), { size: FONT.xs, weight: FONT.bold, tone: "accent" }), heading(3, item.name), para(item.text, { size: FONT.md }));
+            add(section, label(String(at + 1).padStart(2, "0"), { size: FONT.xs, weight: FONT.bold, tone: "accent" }), heading(3, item.name), para(item.text, { size: FONT.md }), points(item.points));
             add(list, section);
             return section;
         });
