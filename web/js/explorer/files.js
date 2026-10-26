@@ -1,6 +1,6 @@
 // Files tab: every downloadable file with a live preview (3D for STL, a rendered board for Gerbers, tables for CSV, text for code).
 (() => {
-    const { el, add, on, track, region, themed, scroller } = app.dom;
+    const { el, add, on, track, region, themed } = app.dom;
     const { state, setState } = app.ex;
     const { SPACE, RADIUS, FONT, px } = app.styles;
     const { label, para } = app.ui.text;
@@ -19,7 +19,7 @@
     const BOARD_FILL = "#1c1708";
     const BOARD_PAD = 14;
     const RATIO = 6;
-    const TEXT_H = 520;
+    const TEXT_H = 300;
     const SPIN_SPEED = 0.006;
     const STL_COLOR = 0xffb224;
     const cache = new Map();
@@ -41,7 +41,9 @@
     const HEX_LIMIT = 4096;
     const IMAGE_EXT = /\.(png|jpe?g|gif|webp|svg)$/i;
     const kindOf = (path) => (/\.stl$/i.test(path) ? "stl" : /\.(csv|tsv)$/i.test(path) ? "csv" : /\.zip$/i.test(path) ? "zip" : IMAGE_EXT.test(path) ? "image" : g.isGerber(path) ? "layer" : g.isDrill(path) ? "drill" : "text");
-    const GROUPS = [["stl", "3D models"], ["layer", "PCB layers (Gerber)"], ["drill", "Drill files"], ["csv", "Tables"], ["zip", "Bundles"], ["image", "Images"], ["text", "Source and project files"]];
+    // Compact picker: one row of categories, then only that category's files.
+    const GROUPS = [["3D models", ["stl"]], ["PCB", ["board", "layer", "drill"]], ["Tables", ["csv"]], ["Bundles", ["zip"]], ["Images", ["image"]], ["Source", ["text", "later"]]];
+    const shortName = (item) => (item.kind === "layer" || item.kind === "drill" ? item.name.replace(/^stick-/, "").replace(/\.[a-z0-9]+$/i, "") : item.name);
     const sizeText = (bytes) => (bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`);
 
     // Everything in the manifest becomes previewable, curated entries first.
@@ -97,7 +99,7 @@
         const geometry = parseStl(buf);
         geometry.computeBoundingSphere();
         const radius = geometry.boundingSphere.radius;
-        const width = Math.max(240, Math.round(app.state.state.viewport.w < 700 ? app.state.state.viewport.w - 2 * SPACE.lg : 340));
+        const width = Math.max(240, Math.round(app.state.state.viewport.w < 700 ? app.state.state.viewport.w - 2 * SPACE.lg : 300));
         const height = Math.round(width * 0.7);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -161,7 +163,7 @@
     function boardView(data) {
         const visible = new Set(["F_Cu", "F_Silkscreen", "Edge_Cuts", "__drill"]);
         let flipped = false;
-        const width = Math.max(260, Math.round(app.state.state.viewport.w < 700 ? app.state.state.viewport.w - 2 * SPACE.lg : 340));
+        const width = Math.max(260, Math.round(app.state.state.viewport.w < 700 ? app.state.state.viewport.w - 2 * SPACE.lg : 300));
         const box = g.bounds(data.layers.Edge_Cuts);
         const height = Math.round(width * ((box.y1 - box.y0) / (box.x1 - box.x0)) + 2 * BOARD_PAD);
         const canvas = el("canvas", { display: "block", width: "100%", height: "auto" });
@@ -293,7 +295,7 @@
         const ops = g.parseGerber(text);
         const edge = g.parseGerber(edgeText);
         const box = g.bounds(edge);
-        const width = Math.max(260, Math.round(app.state.state.viewport.w < 700 ? app.state.state.viewport.w - 2 * SPACE.lg : 340));
+        const width = Math.max(260, Math.round(app.state.state.viewport.w < 700 ? app.state.state.viewport.w - 2 * SPACE.lg : 300));
         const height = Math.round(width * ((box.y1 - box.y0) / (box.x1 - box.x0)) + 2 * BOARD_PAD);
         const canvas = el("canvas", { display: "block", width: "100%", height: "auto" });
         canvas.width = width * RATIO;
@@ -350,32 +352,26 @@
         if (path) links.push(fileLink(path.split("/").pop(), BASE + path));
         (file.get || []).forEach(([text, href]) => links.push(fileLink(text, BASE + href)));
         return [
-            add(row(SPACE.sm), label(file.name, { size: FONT.lg, weight: FONT.bold }), file.kind === "later" ? badge("coming later") : null),
-            file.kind === "later" ? null : note(file.note),
+            file.kind === "later" ? add(row(SPACE.sm), label(file.name, { size: FONT.lg, weight: FONT.bold }), badge("coming later")) : null,
             preview(file),
+            file.kind === "later" ? null : note(`${file.name}: ${file.note}`),
             add(stack(SPACE.xs), links),
         ];
     }
 
-    const MORE_H = 200;
 
     function filesView() {
         const holder = stack(SPACE.md);
         const view = region(holder);
         listFiles().then((all) => view.render(() => {
             const file = all.find((item) => item.id === state.file) || all[0];
-            const picker = row(SPACE.xs);
-            all.filter((item) => !item.extra).forEach((item) => add(picker, button({ label: item.name, kind: "tab", pressed: item.id === file.id, onClick: () => setState({ file: item.id }) })));
-            const extras = all.filter((item) => item.extra);
-            const more = scroller(stack(SPACE.sm, { overflowY: "auto", height: px(MORE_H) }));
-            GROUPS.forEach(([kind, title]) => {
-                const items = extras.filter((item) => item.kind === kind);
-                if (!items.length) return;
-                const chips = row(SPACE.xs, { flexWrap: "wrap" });
-                items.forEach((item) => add(chips, button({ label: item.name, kind: "tab", pressed: item.id === file.id, onClick: () => setState({ file: item.id }) })));
-                add(more, add(stack(SPACE.xs), label(`${title.toUpperCase()} · ${items.length}`, { size: FONT.xs, weight: FONT.bold, tone: "muted" }), chips));
-            });
-            add(holder, picker, extras.length ? add(stack(SPACE.xs), label(`ALL FILES · ${extras.length} MORE`, { size: FONT.xs, weight: FONT.bold, tone: "accent" }), more) : null, ...fileView(file));
+            const groups = GROUPS.map(([title, kinds]) => [title, all.filter((item) => kinds.includes(item.kind))]).filter(([, items]) => items.length);
+            const current = groups.find(([, items]) => items.includes(file)) || groups[0];
+            const cats = row(SPACE.xs, { flexWrap: "wrap" });
+            groups.forEach(([title, items]) => add(cats, button({ label: `${title} ${items.length}`, kind: "tab", pressed: title === current[0], onClick: () => setState({ file: items[0].id }) })));
+            const chips = row(SPACE.xs, { flexWrap: "wrap" });
+            current[1].forEach((item) => add(chips, button({ label: shortName(item), kind: "tab", pressed: item.id === file.id, onClick: () => setState({ file: item.id }) })));
+            add(holder, cats, current[1].length > 1 ? chips : null, ...fileView(file));
         })).catch(() => view.render(() => add(holder, note("The file list comes with the published site. Use the Downloads page."))));
         return [holder];
     }

@@ -44,16 +44,13 @@
 
     function itemCard(item) {
         const has = item.files && item.files.length;
-        const preview = has
-            ? button({ label: "Preview the files", kind: "solid", onClick: () => setState({ tab: "files", file: item.files.some(([, href]) => /stl/.test(href)) ? (/lid/i.test(item.id) ? "lid" : "tray") : "board" }) })
-            : null;
         const files = has ? group("Download the real files", ...item.files.map(([text, href]) => fileLink(text, href))) : null;
         return [
             add(row(SPACE.sm), heading(2, item.name), badge(item.section || item.type, "muted")),
             item.part ? label(item.part, { size: FONT.sm, tone: "muted", mono: true }) : null,
             para(item.blurb, { size: FONT.md }),
             kvList(item.specs || []),
-            preview, files,
+            files,
         ];
     }
 
