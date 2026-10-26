@@ -29,9 +29,10 @@ function buildStick() {
 }
 
 function makeScreen() {
-    const c = document.createElement("canvas"); c.width = 160; c.height = 100;
-    const tex = new THREE.CanvasTexture(c); tex.magFilter = tex.minFilter = THREE.NearestFilter;
-    return { c, tex, key: "", g: c.getContext("2d") };
+    const c = document.createElement("canvas"); c.width = 640; c.height = 400;
+    const tex = new THREE.CanvasTexture(c); tex.anisotropy = 8; tex.colorSpace = THREE.SRGBColorSpace;
+    const g = c.getContext("2d"); g.scale(4, 4);
+    return { c, tex, key: "", g };
 }
 function drawScreen(s, title, lines, blink) {
     const key = title + lines.join("|") + blink; if (key === s.key) return; s.key = key;
@@ -57,16 +58,16 @@ function buildLaptop(x, z, name) {
 
 export function start() {
     const cv = document.getElementById("cv"), view = cv.parentElement, tagsEl = document.getElementById("tags");
-    const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: false });
-    renderer.setPixelRatio(1);
+    const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
     const scene = new THREE.Scene(); scene.background = new THREE.Color(0x008080);
     const camera = new THREE.PerspectiveCamera(42, 1, .1, 300);
     scene.add(new THREE.HemisphereLight(0xffffff, 0x606080, 1.25));
     const sun = new THREE.DirectionalLight(0xffffff, 1.1); sun.position.set(-8, 20, 14); scene.add(sun);
 
-    const fc = document.createElement("canvas"); fc.width = fc.height = 2; const fg = fc.getContext("2d");
-    fg.fillStyle = "#b8b8b8"; fg.fillRect(0, 0, 2, 2); fg.fillStyle = "#909090"; fg.fillRect(0, 0, 1, 1); fg.fillRect(1, 1, 1, 1);
-    const ft = new THREE.CanvasTexture(fc); ft.magFilter = ft.minFilter = THREE.NearestFilter; ft.wrapS = ft.wrapT = THREE.RepeatWrapping; ft.repeat.set(80, 80);
+    const fc = document.createElement("canvas"); fc.width = fc.height = 128; const fg = fc.getContext("2d");
+    fg.fillStyle = "#b8b8b8"; fg.fillRect(0, 0, 128, 128); fg.fillStyle = "#909090"; fg.fillRect(0, 0, 64, 64); fg.fillRect(64, 64, 64, 64);
+    const ft = new THREE.CanvasTexture(fc); ft.anisotropy = 16; ft.colorSpace = THREE.SRGBColorSpace; ft.wrapS = ft.wrapT = THREE.RepeatWrapping; ft.repeat.set(80, 80);
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), new THREE.MeshBasicMaterial({ map: ft })); floor.rotation.x = -Math.PI / 2; floor.position.y = -.01; scene.add(floor);
 
     const H = buildLaptop(-15, 0, "HOST"), A = buildLaptop(0, 0, "TARGET A"), B = buildLaptop(12, -2, "TARGET B"), D = buildLaptop(24, -4, "TARGET C");
@@ -194,7 +195,7 @@ export function start() {
     addEventListener("keydown", (e) => { if (e.key === "ArrowRight") go(cur + 1); else if (e.key === "ArrowLeft") go(cur - 1); else if (e.key === " " && e.target === document.body) { e.preventDefault(); play.click(); } });
     function typed(text, n) { let out = "", left = n; text.split("*").forEach((part, i) => { const s = part.slice(0, Math.max(0, left)); left -= part.length; out += i % 2 ? `<b>${s}</b>` : s; }); return out; }
 
-    function resize() { const sc = innerWidth < 700 ? 2 : 3, w = view.clientWidth, h = view.clientHeight; renderer.setSize(Math.max(1, Math.floor(w / sc)), Math.max(1, Math.floor(h / sc)), false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+    function resize() { const w = view.clientWidth, h = view.clientHeight; renderer.setSize(Math.max(1, w), Math.max(1, h), false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
     addEventListener("resize", resize); resize(); go(cur);
 
     let last = performance.now();

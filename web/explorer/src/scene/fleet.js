@@ -37,11 +37,12 @@ export function buildFleet(makeStick) {
     });
 
     function refresh() {
+        group.visible = state.tab === "signal";
         links.forEach((link) => link.parts.forEach((part) => { part.visible = state.layers.radio; }));
     }
 
     function update(seconds) {
-        if (!state.layers.radio) return;
+        if (!group.visible || !state.layers.radio) return;
         links.forEach((link) => link.pulses.forEach((pulse, idx) => {
             pulse.position.lerpVectors(link.from, link.to, (seconds * PULSE_RATE + idx / PULSES_PER_LINK) % 1);
         }));

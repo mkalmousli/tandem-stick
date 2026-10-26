@@ -4,15 +4,15 @@ import { state } from "./state.js";
 export const ACCENT = { dark: "#5b9bff", light: "#2563eb" };
 
 const SCENE_DARK = {
-    bg: "#0b0b0c", tray: "#3b3b41", lid: "#18181b", pcb: "#0e0e10",
-    chip: "#060607", led: "#d9d9dd", cap: "#5a5a62", metal: "#b4b4bb", hole: "#020203", trace: "#3a3a41",
-    shadow: 0.5, env: 0.55,
+    bg: "#1d212b", tray: "#c9ccd3", lid: "#3f74d6", pcb: "#0e0e10",
+    chip: "#0a0a0c", led: "#f2f2f4", cap: "#b8a070", metal: "#a4a8b0", hole: "#0a0a0b", trace: "#6a7080",
+    shadow: 0.55, env: 0.85,
 };
 
 const SCENE_LIGHT = {
-    bg: "#f3f3f4", tray: "#cfcfd4", lid: "#efeff1", pcb: "#26262b",
-    chip: "#0c0c0e", led: "#f2f2f4", cap: "#8d8d95", metal: "#9a9aa2", hole: "#0a0a0b", trace: "#5a5a62",
-    shadow: 0.2, env: 1,
+    bg: "#d6dbe4", tray: "#dcdee3", lid: "#3f74d6", pcb: "#26262b",
+    chip: "#0c0c0e", led: "#f2f2f4", cap: "#b8a070", metal: "#9ea2aa", hole: "#0a0a0b", trace: "#5a5a62",
+    shadow: 0.3, env: 0.85,
 };
 
 export const PALETTE = {

@@ -5,40 +5,24 @@ import { PRODUCT } from "../data.js";
 import { FONT, RADIUS, SPACE } from "../theme.js";
 import { button, label, stack, wrapRow, px } from "../widgets.js";
 import { renderTour } from "./tour.js";
-import { renderPorts } from "./ports.js";
+import { renderParts } from "./partsTab.js";
 import { renderSignal } from "./signal.js";
-import { renderBoard } from "./boardTab.js";
-import { renderCosts } from "./costs.js";
 
 const TABS = [
     ["tour", "Tour", renderTour],
-    ["ports", "Ports", renderPorts],
+    ["parts", "Parts", renderParts],
     ["signal", "Signal", renderSignal],
-    ["board", "Board", renderBoard],
-    ["costs", "Costs", renderCosts],
 ];
 
 // Which state changes force the active tab to rebuild. Slider-driven fields are excluded on purpose.
 const REBUILD = {
     tour: ["tab", "tour"],
-    ports: ["tab", "selected"],
+    parts: ["tab", "selected"],
     signal: ["tab", "mode", "layers"],
-    board: ["tab", "selected"],
-    costs: ["tab"],
 };
 
-function statTile([value, caption]) {
-    const tile = el("div", {
-        flexGrow: "1", padding: px(SPACE.md), borderRadius: px(RADIUS.sm), borderWidth: "1px", borderStyle: "solid",
-    });
-    themed(tile, { background: "raised", borderColor: "line" });
-    return add(tile, label(value, { size: FONT.md, weight: 600 }), label(caption, { size: FONT.xs, tone: "muted" }));
-}
-
 function buildHeader() {
-    const tiles = wrapRow(SPACE.sm);
-    add(tiles, ...PRODUCT.stats.map(statTile));
-    return add(stack(SPACE.sm), label(PRODUCT.name, { size: FONT.xl, weight: 600 }), label(PRODUCT.tagline, { size: FONT.sm, tone: "muted" }), tiles);
+    return add(stack(SPACE.xs), label(PRODUCT.name, { size: FONT.xl, weight: 600 }), label("Guided tour, every part, and the signal paths. Costs and the roadmap are on the Plan page.", { size: FONT.sm, tone: "muted" }));
 }
 
 function buildTabs() {

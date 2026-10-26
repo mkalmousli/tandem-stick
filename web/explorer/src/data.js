@@ -151,11 +151,10 @@ export const LAYER_INFO = [
 // Guided tour: each step moves the camera and shows one idea.
 export const TOUR = [
     { title: "The whole stick", text: "A USB-A plug on a 33 × 17.4 mm board in a printed case. No buttons, no screen. One stick per machine you want to control, plus one for you.", view: "iso", explode: 0 },
-    { title: "The only connector", text: "A Würth USB-A plug carries power in and USB data both ways. Plug it into a target and it acts as a keyboard, mouse or drive. Plug it into your computer and it becomes the host.", focus: "p-plug", explode: 0, tab: "ports" },
-    { title: "Open the case", text: "Two snap-fit halves, printed in PETG with no supports. Everything fits because every dimension is derived from the part sizes.", view: "iso", explode: 1, tab: "board" },
-    { title: "Brain and radio", text: "One pre-certified ESP32-S3 module is the USB device, the firmware and the radio. The antenna end of the board is a keep-out, so nothing else lives there.", focus: "esp", explode: 1, tab: "board" },
-    { title: "Power", text: "A 3.3 V regulator turns the port's 5 V into the module's supply. Bulk and decoupling capacitors sit next to it.", focus: "pwr", explode: 1, tab: "board" },
-    { title: "One light", text: "A single RGB LED is the whole interface: colour shows paired, linked or error.", focus: "led", explode: 1, tab: "board" },
+    { title: "The only connector", text: "A Würth USB-A plug carries power in and USB data both ways. Plug it into a target and it acts as a keyboard, mouse or drive. Plug it into your computer and it becomes the host.", focus: "p-plug", explode: 0, tab: "parts" },
+    { title: "Open the case", text: "Two snap-fit halves, printed in PETG with no supports. Everything fits because every dimension is derived from the part sizes.", view: "iso", explode: 1, tab: "parts" },
+    { title: "Brain and radio", text: "One pre-certified ESP32-S3 module is the USB device, the firmware and the radio. The antenna end of the board is a keep-out, so nothing else lives there.", focus: "esp", explode: 1, tab: "parts" },
+    { title: "Power", text: "A 3.3 V regulator turns the port's 5 V into the module's supply. Bulk and decoupling capacitors sit next to it.", focus: "pwr", explode: 1, tab: "parts" },
+    { title: "One light", text: "A single RGB LED is the whole interface: colour shows paired, linked or error.", focus: "led", explode: 1, tab: "parts" },
     { title: "Signals", text: "Host role: USB in, radio out to every paired stick. Target role: radio in, USB out to the machine. Toggle the layers to follow each path.", view: "top", explode: 0, tab: "signal", mode: "target" },
-    { title: "Cost", text: "About €14 per stick at five units, before one-time setup fees. Move the slider to see how quantity changes it.", view: "iso", explode: 0, tab: "costs" },
 ];

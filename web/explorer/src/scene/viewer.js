@@ -24,7 +24,7 @@ const FOCUS_PULL = 0.55;
 const FOV = 35;
 const PORTRAIT_FIT = 1.45;
 const EASE_RATE = 8;
-const LIGHT = { hemi: 0.35, key: 1.6, keyPos: [30, 70, 45], shadow: 2048, shadowRange: 80 };
+const LIGHT = { hemi: 0.6, key: 2.2, keyPos: [30, 70, 45], shadow: 4096, shadowRange: 80 };
 const HOVER_COLOR = "#92929a";
 const GHOST_PICK_LIMIT = 0.3;
 
@@ -114,6 +114,7 @@ export function createViewer(parent) {
 
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     const scene = new THREE.Scene();
@@ -256,7 +257,7 @@ export function createViewer(parent) {
         selectHelper.material.color.set(p.accent);
         model.refresh();
     });
-    subscribe((patch) => { if ("mode" in patch || "layers" in patch) model.refresh(); });
+    subscribe((patch) => { if ("mode" in patch || "layers" in patch || "tab" in patch) model.refresh(); });
     onCommand("preset", preset);
     onCommand("focus", focus);
     buildControls();

@@ -4,7 +4,7 @@ import { findItem } from "./data.js";
 import { selectItem } from "./actions.js";
 import { goTour } from "./components/tour.js";
 
-const TABS = ["tour", "ports", "signal", "board", "costs"];
+const TABS = ["tour", "parts", "signal"];
 const VIEWS = ["front", "rear", "top", "iso"];
 
 export function readLink() {

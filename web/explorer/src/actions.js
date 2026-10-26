@@ -9,6 +9,6 @@ export function selectItem(id, { fly = false } = {}) {
     const item = findItem(id);
     if (!item) return;
     if (item.type === "chip" && state.explode < OPEN_THRESHOLD) setState({ explode: 1 });
-    setState({ selected: id, tab: item.type === "port" ? "ports" : "board" });
+    setState({ selected: id, tab: "parts" });
     if (fly) emit("focus", id);
 }
