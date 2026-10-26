@@ -33,8 +33,9 @@
         const box = el("div", { display: "flex", flexDirection: "column", gap: px(SPACE.md), padding: px(SPACE.lg), borderRadius: px(RADIUS.md), borderWidth: "1px", borderStyle: "solid", boxSizing: "border-box", overflow: "hidden" });
         themed(box, { background: "surface", borderColor: "line" });
         const fit = () => { box.style.width = `${Math.min(DIALOG_MAX, window.innerWidth * DIALOG_W)}px`; box.style.maxHeight = `${window.innerHeight * DIALOG_W}px`; };
-        const body = el("div", { overflowY: "auto", scrollbarWidth: "thin", display: "flex", flexDirection: "column", gap: px(SPACE.sm), minHeight: "0" });
-        const close = () => { scope.dispose(); root.remove(); if (opener && opener.focus) opener.focus(); };
+        const body = el("div", { overflow: "hidden", display: "flex", flexDirection: "column", gap: px(SPACE.sm), minHeight: "0" });
+        document.documentElement.style.overflow = "hidden"; // nothing scrolls behind or inside the dialog
+        const close = () => { scope.dispose(); root.remove(); document.documentElement.style.overflow = ""; if (opener && opener.focus) opener.focus(); };
         const sizeNote = opts.size ? ` · ${(opts.size / 1024).toFixed(opts.size > 102400 ? 0 : 1)} KB` : "";
         const actions = row(SPACE.sm, { flexWrap: "wrap" });
         if (href) add(actions, saveLink(`Download${sizeNote}`, href, true, close));
