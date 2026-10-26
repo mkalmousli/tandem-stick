@@ -131,6 +131,8 @@
             const free = Math.max(MIN_STAGE_H, viewport.h - top - 2 * pad);
             const inner = viewport.w - 2 * pad;
             const stageH = narrow ? Math.round(Math.max(NARROW_MIN, viewport.h - top - 2 * pad)) : free;
+            document.documentElement.style.overflow = narrow ? "hidden" : "";
+            stage.style.overflow = narrow ? "hidden" : ""; // phones: the sheet is the only scroller
             Object.assign(root.style, { gap: px(pad), padding: px(pad) });
             Object.assign(stage.style, { width: px(inner), height: px(stageH) });
             Object.assign(size, { stageW: inner, stageH, pad, over: !narrow });
@@ -141,6 +143,7 @@
             placePanel();
             if (!narrow) viewer.resize(inner, stageH);
         };
+        track(() => { document.documentElement.style.overflow = ""; });
         watchViewport(place);
         requestAnimationFrame(() => place(app.state.state.viewport)); // once attached, the top offset is known
         return root;
