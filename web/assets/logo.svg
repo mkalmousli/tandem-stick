@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Tandem logo: two USB sticks linked by radio waves">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#101a33"/><stop offset="1" stop-color="#060912"/></linearGradient>
+    <linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6aa8ff"/><stop offset="1" stop-color="#2f5de0"/></linearGradient>
+    <linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5df2d0"/><stop offset="1" stop-color="#1fa8c9"/></linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="30" fill="url(#bg)"/>
+  <g fill="none" stroke="#7fe3ff" stroke-linecap="round" stroke-width="4.5">
+    <path d="M51.9 43A14 14 0 0 1 76.1 43" opacity="1"/>
+    <path d="M43.2 38A24 24 0 0 1 84.8 38" opacity=".65"/>
+    <path d="M34.6 33A34 34 0 0 1 93.4 33" opacity=".35"/>
+  </g>
+  <circle cx="64" cy="51" r="4.2" fill="#fff"/>
+  <rect x="12" y="68" width="14" height="16" rx="3" fill="#c9d6f2"/>
+  <rect x="22" y="60" width="34" height="32" rx="9" fill="url(#a)"/>
+  <rect x="72" y="60" width="34" height="32" rx="9" fill="url(#b)"/>
+  <rect x="102" y="68" width="14" height="16" rx="3" fill="#c9d6f2"/>
+  <circle cx="39" cy="76" r="4" fill="#fff" opacity=".95"/>
+  <circle cx="89" cy="76" r="4" fill="#fff" opacity=".95"/>
+</svg>

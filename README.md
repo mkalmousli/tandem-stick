@@ -1,13 +1,29 @@
-# Tandem Stick
+<p align="center"><img src="web/assets/banner.svg" alt="Tandem Stick" width="100%"></p>
+
+<p align="center">
+<a href="https://mkalmousli.github.io/tandem-stick/"><b>Walk the 3D world →</b></a> ·
+<a href="https://mkalmousli.github.io/tandem-stick/explore.html">Explorer</a> ·
+<a href="https://mkalmousli.github.io/tandem-stick/plan.html">Plan</a> ·
+<a href="https://mkalmousli.github.io/tandem-stick/downloads.html">Downloads</a>
+</p>
+
+![license](https://img.shields.io/badge/license-MIT-5b9bff) ![status](https://img.shields.io/badge/status-concept-ffb454) ![stack](https://img.shields.io/badge/three.js-r160-5df2d0) ![build](https://img.shields.io/badge/build-none-8b7bff)
 
 Open hardware concept: a button-free USB stick that pairs with other sticks by radio, so one host controls many machines. One stick per target, one for you.
 
 **Status: concept.** Board design is DRC-clean and the case is printable, but no board has been built or tested on hardware.
 
+| | |
+|---|---|
+| ![Download Dock](docs/img/world-dock.jpg) | ![Test Lab](docs/img/world-lab.jpg) |
+
+The landing page is an open-world scene: fly or walk (WASD, drag, touch pad) between the stick, the plan tower, the test lab and the download dock, watch the fleet talk by radio, and walk into a portal to open that page.
+
 **Site:** https://mkalmousli.github.io/tandem-stick/
 
 | Page | What it has |
 |---|---|
+| [World](web/index.html) | Open-world 3D landing: walkable, live radio traffic, portals to every page |
 | [Explore 3D](web/explore.html) | Guided tour, exploded view, clickable parts, signal paths, shareable links, keyboard shortcuts |
 | [Plan](web/plan.html) | Requirements, architecture, firmware, security, roadmap with gates, costs, compliance, risks |
 | [Test lab](web/test.html) | Automated design checks, pairing/latency simulator, Web Serial bring-up tool, first-article checklist |
