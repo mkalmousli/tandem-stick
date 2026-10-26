@@ -102,7 +102,12 @@
 
         // On phones the 3D view only gets the part the sheet leaves free.
         const sheet = app.ex.sheet.createSheet(panel, (visible) => viewer.resize(size.stageW, Math.round(Math.max(size.stageH - visible, size.stageH * 0.3))));
-        subscribe((patch) => { if ("tab" in patch || patch.selected) sheet.open(); }); // picking a tab or a part shows its content
+        subscribe((patch) => {
+            if ("tab" in patch) app.state.setState({ exTab: state.tab }); // lets the header mark Build
+            if ("tab" in patch || patch.selected) sheet.open(patch.tab === "build");
+        });
+        app.state.setState({ exTab: state.tab });
+        track(() => app.state.setState({ exTab: null })); // picking a tab or a part shows its content
         let hidden = false;
         let wanted = savedWidth();
         let size = { stageW: 1, stageH: 1, pad: SPACE.lg, over: true, panelW: PANEL_DEFAULT };

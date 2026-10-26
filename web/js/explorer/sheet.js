@@ -60,7 +60,7 @@
                 Object.assign(panel.style, { left: "auto", bottom: "auto", transform: "none", transition: "none", borderRadius: px(RADIUS.md), willChange: "auto" });
                 panel.bodyNode.style.paddingBottom = "0px";
             },
-            open() { if (active && shown === PEEK) go(lastOpen); },
+            open(full) { if (active && full) go(height); else if (active && shown === PEEK) go(lastOpen); }, // `full` asks for the whole height
             layout(stageH) {
                 height = Math.round(stageH * FULL);
                 if (!lastOpen) shown = Math.round(stageH * HALF); // first layout starts half open

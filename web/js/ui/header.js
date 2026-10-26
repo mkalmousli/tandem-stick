@@ -23,7 +23,8 @@
     }
 
     function drawNav(node, palette, flags) {
-        const active = node._route === state.route;
+        const building = state.route === "explore" && state.exTab === "build"; // the Build tab of the explorer
+        const active = node._build ? building : node._route === state.route && !(building && node._route === "explore");
         node.style.background = active ? palette.raised : "transparent";
         node.style.color = active || flags.hover ? palette.text : palette.muted;
         node.style.boxShadow = active ? `inset 0 -2px 0 ${palette.accent}` : "none";
@@ -37,7 +38,7 @@
         node.href = `#/${route}`;
         node.textContent = text;
         const repaint = interact(node, { native: true, onActivate: () => {}, draw: drawNav });
-        subscribe((patch) => { if ("route" in patch) repaint(); });
+        subscribe((patch) => { if ("route" in patch || "exTab" in patch) repaint(); });
         return node;
     }
 
@@ -55,6 +56,7 @@
         const node = navLink("explore", "Build");
         node.href = "#/explore?tab=build";
         node._route = "";
+        node._build = true;
         // Already in the explorer: switch tab in place so the chosen path and step are kept.
         app.dom.on(node, "click", (evt) => { if (app.router.current().name === "explore" && app.ex.setState) { evt.preventDefault(); app.ex.setState({ tab: "build" }); } });
         return node;
