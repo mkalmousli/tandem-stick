@@ -13,7 +13,7 @@ rmSync(dist, { recursive: true, force: true });
 cpSync(join(root, "web"), dist, { recursive: true });
 
 const copy = (from, to = from) => { mkdirSync(join(files, to, ".."), { recursive: true }); cpSync(join(root, from), join(files, to), { recursive: true }); };
-["hardware/fab", "hardware/tandem.pretty", "hardware/stick.kicad_pcb", "hardware/stick.kicad_pro", "hardware/build_board.py", "hardware/drc.py", "mechanical/case-tray.stl", "mechanical/case-lid.stl"].forEach((p) => copy(p));
+["hardware/fab", "hardware/renders", "hardware/tandem.pretty", "hardware/stick.kicad_pcb", "hardware/stick.kicad_pro", "hardware/build_board.py", "hardware/drc.py", "mechanical/case-tray.stl", "mechanical/case-lid.stl"].forEach((p) => copy(p));
 
 const bundle = (name, paths) => {
     mkdirSync(join(files, "bundles"), { recursive: true });

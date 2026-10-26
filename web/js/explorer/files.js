@@ -278,6 +278,10 @@
         return [table({ rows: [["File", file.name], ["Looks like", found ? found[0] : "Binary data"], ["Size", `${buf.byteLength.toLocaleString()} bytes`]], boldFirst: true, copy: false }), note("Not readable as text. Use the download button to open it in the right program.")];
     }
 
+    // Files a browser cannot draw (KiCad) get pictures exported with kicad-cli, shown above the text.
+    const RENDERS = { "stick.kicad_pcb": ["board-front.png", "board-back.png"], "ESP32-S3-MINI-1.kicad_mod": ["ESP32-S3-MINI-1.png"] };
+    const rendersOf = (file) => (RENDERS[file.path.split("/").pop()] || []).map((name) => imageView({ name, path: `hardware/renders/${name}` })).flat();
+
     function imageView(file) {
         const img = el("img", { display: "block", width: "100%", height: "auto" }, { alt: file.name, src: BASE + file.path });
         return [frame(zoomable(img, file.name))];
@@ -338,7 +342,7 @@
         text: async (file) => {
             const buf = await load(file.path, true);
             const sample = new Uint8Array(buf, 0, Math.min(buf.byteLength, 2048));
-            return sample.includes(0) ? binaryView(file, buf) : textView(new TextDecoder().decode(buf));
+            return sample.includes(0) ? binaryView(file, buf) : [...rendersOf(file), ...textView(new TextDecoder().decode(buf))];
         },
         later: async (file) => [note(file.note)],
     };
