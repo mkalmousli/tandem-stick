@@ -6,15 +6,11 @@
     const { button } = app.ui.button;
     const { stack, row, column, grid, isNarrow, isPhone } = app.ui.layout;
     const { card } = app.ui.card;
-    const { table } = app.ui.table;
-    const { STEPS } = app.story.steps;
+    const { scrollDemo, scenarioChips } = app.pages.scrollDemo;
     const { SCENARIOS, findScenario } = app.data;
-    const { ROLES, HOME } = app.content;
+    const { HOME } = app.content;
     const { section } = app.ui.page;
 
-    const STAGE_RATIO = 0.52;
-    const PHONE_STAGE_RATIO = 0.95;
-    const PANEL_W = 340;
     const GUTTER = { phone: SPACE.lg, wide: SPACE.xl };
     const REVEAL = { shift: 24, ms: 500, threshold: 0.12 };
     const HERO_FLOAT = { amp: 10, speed: 0.0012, tilt: 2.5 };
@@ -23,71 +19,6 @@
     const WIDE_BLOCK = SPACE.xxl * 2;
 
     const innerWidth_ = (viewport) => Math.min(SIZE.content, viewport.w) - 2 * (isPhone(viewport) ? GUTTER.phone : GUTTER.wide);
-
-    function scenarioPicker(current, onPick) {
-        const box = row(SPACE.xs);
-        SCENARIOS.forEach((item) => add(box, button({ label: item.name, kind: "tab", pressed: item.id === current, onClick: () => onPick(item.id) })));
-        return box;
-    }
-
-    // Everything that depends on the chosen scenario: the 3D stage, the step list and the try-it buttons.
-    function walkthrough(host, scenario) {
-        const frame = el("div", { display: "flex", gap: px(SPACE.lg), alignItems: "flex-start" });
-        const stageHost = el("div", { flexShrink: "0" });
-        const side = stack(SPACE.md, { flexShrink: "0" });
-        add(frame, stageHost, side);
-        add(host, frame);
-        const player = app.story.createPlayer(stageHost, scenario);
-        const stageEl = player.stage.el;
-        stageEl.tabIndex = 0;
-        stageEl.setAttribute("aria-label", `Interactive demo: ${scenario.name}. Type to send input to the target screens.`);
-        on(stageEl, "keydown", (evt) => { if (player.typeKey(evt)) evt.preventDefault(); });
-
-        const body = stack(SPACE.md);
-        const view = region(body);
-        const draw = () => view.render(() => add(body, stepPanel(player, scenario)));
-        draw();
-        player.subscribe(draw);
-        add(side, body);
-
-        watchViewport((viewport) => {
-            const narrow = isNarrow(viewport);
-            const inner = innerWidth_(viewport);
-            const stageW = narrow ? inner : inner - PANEL_W - SPACE.lg;
-            const stageH = Math.round(stageW * (isPhone(viewport) ? PHONE_STAGE_RATIO : STAGE_RATIO));
-            frame.style.flexDirection = narrow ? "column" : "row";
-            side.style.width = px(narrow ? inner : PANEL_W);
-            player.stage.resize(stageW, stageH);
-        });
-        return player;
-    }
-
-    function stepPanel(player, scenario) {
-        const { idx, playing } = player.state;
-        const step = STEPS[idx];
-        const dots = row(SPACE.xs);
-        STEPS.forEach((item, at) => add(dots, button({ label: String(at + 1), kind: "tab", pressed: at === idx, ariaLabel: `Step ${at + 1}: ${item.title}`, onClick: () => player.go(at) })));
-        const nav = row(SPACE.sm);
-        add(nav,
-            button({ label: "Back", onClick: player.prev, grow: true }),
-            button({ label: idx === STEPS.length - 1 ? "Start over" : "Next", kind: "solid", onClick: idx === STEPS.length - 1 ? () => player.go(0) : player.next, grow: true }),
-            button({ label: playing ? "Pause" : "Auto-play", kind: "tab", pressed: playing, onClick: () => player.setPlaying(!playing) }));
-        return [
-            label(`Step ${idx + 1} of ${STEPS.length}`, { size: FONT.xs, tone: "muted" }),
-            heading(2, step.title),
-            para(step.text(scenario), { size: FONT.md }),
-            dots, nav, tryIt(player, scenario, step),
-        ];
-    }
-
-    function tryIt(player, scenario, step) {
-        const box = card();
-        add(box, label("TRY IT", { size: FONT.xs, weight: FONT.bold, tone: "accent" }));
-        if (!step.interact) return add(box, para("Reach step 5 or 6 to send input yourself.", { size: FONT.sm, tone: "muted" }), button({ label: "Jump to step 5", onClick: () => player.go(4) }));
-        const buttons = row(SPACE.xs);
-        scenario.actions.forEach((action) => add(buttons, button({ label: action.label, kind: "solid", onClick: () => { player.setPlaying(false); player.send(action); } })));
-        return add(box, para(`Press a button, or click the 3D view and use your keyboard. ${scenario.hostDoes}`, { size: FONT.sm, tone: "muted" }), buttons);
-    }
 
     // Fade and slide a block in the first time it scrolls into view.
     function reveal(node) {
@@ -161,15 +92,12 @@
         return cells(HOME.steps, 220, ([title, text], idx) => card(label(String(idx + 1), { size: FONT.xl, weight: FONT.bold, tone: "accent" }), heading(3, title), para(text, { size: FONT.sm, tone: "muted" })));
     }
 
-    function whyCards() {
-        return cells(HOME.why, 260, ([title, text]) => card(heading(3, title), para(text, { size: FONT.sm, tone: "muted" })));
-    }
-
+    // Use cases as compact tiles: who it is for and what they do. Tiles with a demo open it.
     function caseCards(pick) {
-        return cells(HOME.cases, 250, ([title, who, text, id]) => {
-            const node = card(label(who.toUpperCase(), { size: FONT.xs, tone: "accent", weight: FONT.bold }), heading(3, title), para(text, { size: FONT.sm, tone: "muted" }));
+        return cells(HOME.cases, 200, ([title, who, , id]) => {
+            const node = card(label(who.toUpperCase(), { size: FONT.xs, tone: "accent", weight: FONT.bold }), heading(3, title));
             if (!id) return node;
-            add(node, label("See it live →", { size: FONT.sm, tone: "accent", weight: FONT.medium }));
+            add(node, label("Watch it →", { size: FONT.sm, tone: "accent", weight: FONT.medium }));
             node.style.cursor = "pointer";
             interact(node, {
                 role: "button", label: `Show the live demo: ${title}`, onActivate: () => pick(id),
@@ -185,7 +113,7 @@
             card(label("HOST STICK", { size: FONT.xs, weight: FONT.bold, tone: "accent" }), heading(3, "In your computer"), para("Your keyboard and mouse are read here and sent over the radio. One host per group.", { size: FONT.sm, tone: "muted" })),
             card(label("TARGET STICK", { size: FONT.xs, weight: FONT.bold, tone: "accent" }), heading(3, "In each machine you control"), para("It receives the radio data and acts like a normal USB keyboard and mouse. As many as you need.", { size: FONT.sm, tone: "muted" })));
         requestAnimationFrame(() => duo.layout());
-        return [duo, table({ head: ROLES.head, rows: ROLES.rows, boldFirst: true }), para(ROLES.why, { size: FONT.sm, tone: "muted" })];
+        return duo;
     }
 
     // One question per row; activating it shows or hides the answer.
@@ -227,18 +155,18 @@
     function build(query) {
         let scenario = findScenario(query.get("s"));
         const picker = el("div");
-        const lead = para("", { tone: "muted", size: FONT.md });
         const stageBox = el("div");
         const stageView = region(stageBox);
         const pickerView = region(picker);
-        const demo = band("demo", "Live demo", "See it work", "Pick a situation, step through it in 3D, then press the buttons or type on your own keyboard.", picker, lead, stageBox);
+        const demo = band("demo", "Live demo", "Scroll to see it work", null, picker);
+        const demoStage = column(stageBox);
+        demo.appendChild(demoStage);
 
         function show(id) {
             scenario = findScenario(id);
             app.router.replaceQuery(new URLSearchParams({ s: scenario.id }));
-            lead.textContent = `${scenario.who}. ${scenario.pitch}`;
-            pickerView.render(() => add(picker, scenarioPicker(scenario.id, show)));
-            stageView.render(() => walkthrough(stageBox, scenario));
+            pickerView.render(() => add(picker, scenarioChips(scenario.id, show)));
+            stageView.render(() => scrollDemo(stageBox, scenario));
         }
         const pick = (id) => { demo.scrollIntoView({ behavior: "smooth" }); show(id); };
 
@@ -247,11 +175,11 @@
             hero(),
             band("how", "How it works", "Four steps, no software", null, stepCards()),
             demo,
-            band("why", "Why it is different", "Made to just work", null, whyCards()),
-            band("cases", "Use cases", "Made for real situations", "From a single desk to a whole building. Tap a card marked live to see it in 3D.", caseCards(pick)),
+            band("cases", "Use cases", "Made for real situations", null, caseCards(pick)),
             band("roles", "Host and target", "Same stick, two jobs", null, roleCards()),
             band("faq", "Questions", "Good to know", null, faq()),
-            band("start", "Start", "Build one this weekend", "Everything is open: the board, the case and the plan. Explore the parts in 3D, then grab the files.", finalCta()));
+            band("start", "Start", "Build one this weekend", null, finalCta())
+        );
         show(scenario.id);
         return page;
     }

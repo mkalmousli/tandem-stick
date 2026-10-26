@@ -7,7 +7,7 @@
     const { W, H, createScreen } = app.story.screens;
 
     const COLOR = {
-        case: 0x3b4252, caseTop: 0x4c566a, pcb: 0x1f8a5b, chip: 0x15171b, metal: 0xc7ccd4, dark: 0x2b2f38, body: 0x2f3440, key: 0x59616f,
+        case: 0xe9e9ec, caseTop: 0xf0a92b, pcb: 0x1f8a5b, chip: 0x15171b, metal: 0xc7ccd4, dark: 0x2b2f38, body: 0x2f3440, key: 0x59616f,
         led: { off: 0x30343c, white: 0xffffff, blue: 0x4aa3ff, green: 0x45e08a, red: 0xff5a5a, violet: 0xb48cff },
         radio: 0xffb224,
     };
@@ -16,13 +16,15 @@
     const HOST_X = -15;
     const PLUG_TIP = STICK.len / 2 + STICK.plug - 0.3; // distance from a stick's centre to its plug tip
     const FOV = 35;
+    const SHADOW_RANGE = 50;
+    const SHADOW_OPACITY = 0.3;
     const EASE = 3.2;
-    const PORTRAIT_FIT = 1.7;
+    const PORTRAIT_FIT = 2.1;
     const TAG_SHIFT = "translate(-50%, -120%)";
 
-    const lambert = (color) => new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.15, flatShading: true });
-    function box(w, h, d, color, parent, x = 0, y = 0, z = 0) {
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), lambert(color));
+    const lambert = (color, rough = 0.45, metal = 0.1) => new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal });
+    function box(w, h, d, color, parent, x = 0, y = 0, z = 0, rough, metal) {
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), lambert(color, rough, metal));
         mesh.position.set(x, y, z);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
@@ -44,7 +46,7 @@
         led.position.set(-1.3, 0.2, 0.4);
         lid.add(led);
         lid.position.y = STICK.h / 2 + 0.2;
-        const plug = box(STICK.plug, 0.45, 1.25, COLOR.metal, body, STICK.len / 2 + STICK.plug / 2 - 0.3, 0, 0);
+        const plug = box(STICK.plug, 0.45, 1.25, COLOR.metal, body, STICK.len / 2 + STICK.plug / 2 - 0.3, 0, 0, 0.25, 1);
         plug.castShadow = false;
         group.add(body, lid);
         return { group, lid, setLed: (color) => ledMat.color.set(color), setLidLift: (amount) => { lid.position.y = STICK.h / 2 + 0.2 + amount; } };
@@ -161,19 +163,16 @@
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, app.scene.studio.MAX_RATIO));
         renderer.setClearColor(0x000000, 0);
         renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.05;
         const scene = new THREE.Scene();
+        const studio = app.scene.studio;
+        const env = studio.buildEnvironment(renderer);
+        scene.environment = env.texture;
         const camera = new THREE.PerspectiveCamera(FOV, 1, 0.5, 400);
-        scene.add(new THREE.HemisphereLight(0xffffff, 0x555566, 1.1));
-        const sun = new THREE.DirectionalLight(0xffffff, 2.2);
-        sun.position.set(10, 30, 25);
-        sun.castShadow = true;
-        sun.shadow.mapSize.set(1024, 1024);
-        Object.assign(sun.shadow.camera, { left: -45, right: 45, top: 30, bottom: -30, near: 1, far: 120 });
-        scene.add(sun);
-        const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.ShadowMaterial({ opacity: 0.25 }));
-        ground.rotation.x = -Math.PI / 2;
-        ground.receiveShadow = true;
-        scene.add(ground);
+        studio.buildLights(scene, SHADOW_RANGE);
+        studio.buildGround(scene).opacity = SHADOW_OPACITY;
 
         const world = new THREE.Group();
         scene.add(world);
@@ -222,7 +221,7 @@
         }
 
         const portWorld = (device) => device.group.position.clone().add(device.port);
-        track(() => { renderer.dispose(); });
+        track(() => { env.pmrem.dispose(); renderer.dispose(); });
         return { el: wrap, canvas, hero, host, targets, links, pulses, rings, tags, world, setCamera, resize, render, portWorld, tmp };
     }
 
