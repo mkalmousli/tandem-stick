@@ -81,14 +81,14 @@
 
     function fileLink(text, href) {
         const node = el("a", {
-            display: "flex", alignItems: "center", justifyContent: "space-between", gap: px(SPACE.md), padding: `${px(SPACE.sm)} ${px(SPACE.md)}`,
+            display: "flex", alignItems: "center", justifyContent: "flex-start", gap: px(SPACE.md), padding: `${px(SPACE.sm)} ${px(SPACE.md)}`,
             borderRadius: px(RADIUS.sm), borderWidth: "1px", borderStyle: "solid", fontFamily: FONT.sans, fontSize: px(FONT.sm),
             textDecoration: "none", boxSizing: "border-box",
         });
         node.href = href;
         node.setAttribute("download", "");
         on(node, "click", (evt) => { evt.preventDefault(); reviewFile(text, href); });
-        add(node, label(text, { size: FONT.sm }), label("Review", { size: FONT.xs, tone: "accent", weight: FONT.bold }));
+        add(node, label("Download", { size: FONT.xs, tone: "accent", weight: FONT.bold }), label(text, { size: FONT.sm }));
         interact(node, { native: true, onActivate: () => {}, draw: drawFile });
         return node;
     }

@@ -360,9 +360,9 @@
         (file.get || []).forEach(([text, href]) => links.push(fileLink(text, BASE + href)));
         return [
             file.kind === "later" ? add(row(SPACE.sm), label(file.name, { size: FONT.lg, weight: FONT.bold }), badge("coming later")) : null,
+            add(stack(SPACE.xs), links),
             preview(file),
             file.kind === "later" ? null : note(`${file.name}: ${file.note}`),
-            add(stack(SPACE.xs), links),
         ];
     }
 
