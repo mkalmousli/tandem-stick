@@ -37,8 +37,6 @@
     ];
 
     const MANIFEST = "manifest.json";
-    const BYTES_PER_ROW = 16;
-    const HEX_LIMIT = 4096;
     const IMAGE_EXT = /\.(png|jpe?g|gif|webp|svg)$/i;
     const kindOf = (path) => (/\.stl$/i.test(path) ? "stl" : /\.(csv|tsv)$/i.test(path) ? "csv" : /\.zip$/i.test(path) ? "zip" : IMAGE_EXT.test(path) ? "image" : g.isGerber(path) ? "layer" : g.isDrill(path) ? "drill" : "text");
     // Compact picker: one row of categories, then only that category's files.
@@ -65,7 +63,6 @@
         return cache.get(key);
     }
 
-    const heading3 = (text) => label(text.toUpperCase(), { size: FONT.xs, weight: FONT.bold, tone: "muted" });
     const note = (text) => para(text, { size: FONT.sm, tone: "muted" });
     const frame = (...children) => {
         const box = el("div", { borderRadius: px(RADIUS.md), overflow: "hidden", borderWidth: "1px", borderStyle: "solid", boxSizing: "border-box" });
@@ -272,20 +269,30 @@
         return [table({ head: ["File in the zip", "Size"], rows, numeric: [1] }), note(`${rows.length} files. Download the zip to get them all.`)];
     }
 
-    function hexView(buf) {
-        const bytes = new Uint8Array(buf, 0, Math.min(buf.byteLength, HEX_LIMIT));
-        const lines = [];
-        for (let i = 0; i < bytes.length; i += BYTES_PER_ROW) {
-            const chunk = [...bytes.slice(i, i + BYTES_PER_ROW)];
-            const hex = chunk.map((byte) => byte.toString(16).padStart(2, "0")).join(" ").padEnd(BYTES_PER_ROW * 3 - 1);
-            lines.push(`${i.toString(16).padStart(6, "0")}  ${hex}  ${chunk.map((byte) => (byte > 31 && byte < 127 ? String.fromCharCode(byte) : ".")).join("")}`);
-        }
-        return [...textView(lines.join("\n")), note(`Binary file: first ${bytes.length} bytes shown.`)];
+    const MAGIC = [["PNG image", [0x89, 0x50]], ["JPEG image", [0xff, 0xd8]], ["ZIP archive", [0x50, 0x4b]], ["gzip archive", [0x1f, 0x8b]], ["PDF document", [0x25, 0x50]], ["ESP32 firmware image", [0xe9]]];
+
+    // Binary files: say what it is and how big, instead of dumping bytes nobody can read.
+    function binaryView(file, buf) {
+        const head = new Uint8Array(buf, 0, Math.min(buf.byteLength, 4));
+        const found = MAGIC.find(([, bytes]) => bytes.every((byte, idx) => head[idx] === byte));
+        return [table({ rows: [["File", file.name], ["Looks like", found ? found[0] : "Binary data"], ["Size", `${buf.byteLength.toLocaleString()} bytes`]], boldFirst: true, copy: false }), note("Not readable as text. Use the download button to open it in the right program.")];
     }
 
     function imageView(file) {
         const img = el("img", { display: "block", width: "100%", height: "auto" }, { alt: file.name, src: BASE + file.path });
         return [frame(zoomable(img, file.name))];
+    }
+
+    const LAYER_ROLE = { Cu: "Copper: the wires and pads", Mask: "Solder mask: the coating, openings show bare metal", Paste: "Solder paste stencil openings", Silkscreen: "Printed labels and outlines", Cuts: "Board outline" };
+    const SHAPE_NAME = { flash: "Pads and vias", line: "Tracks", region: "Filled areas", arc: "Curved tracks" };
+    const roleOf = (name) => LAYER_ROLE[Object.keys(LAYER_ROLE).find((key) => name.endsWith(key))] || "Board layer";
+
+    // What the layer is and what is on it, counted by kind of shape.
+    function layerFacts(name, ops, box) {
+        const counts = {};
+        ops.forEach((op) => { counts[op.type] = (counts[op.type] || 0) + 1; });
+        const rows = [["Layer", name.replace(/_/g, " ")], ["Does", roleOf(name)], ["Board", `${(box.x1 - box.x0).toFixed(1)} × ${(box.y1 - box.y0).toFixed(1)} mm`], ...Object.entries(counts).map(([kind, count]) => [SHAPE_NAME[kind] || kind, String(count)])];
+        return table({ rows, boldFirst: true, copy: false });
     }
 
     // One Gerber layer drawn over the board outline, with the raw file underneath.
@@ -309,7 +316,7 @@
         const [, color, alpha] = g.styleFor(`stick-${name}.x`);
         g.drawOps(ctx, ops, view, color, Math.max(alpha, 0.55));
         g.drawOps(ctx, edge, view, "#ffd54a", 1);
-        return [frame(zoomable(canvas, `${name} layer`)), note(`${name.replace("_", " ")}: ${ops.length.toLocaleString()} drawing operations on a ${(box.x1 - box.x0).toFixed(1)} × ${(box.y1 - box.y0).toFixed(1)} mm board.`), heading3("Raw file"), ...textView(text)];
+        return [frame(zoomable(canvas, `${name} layer`)), layerFacts(name, ops, box)];
     }
 
     // Drill hits as a table: where each hole is and how big.
@@ -331,7 +338,7 @@
         text: async (file) => {
             const buf = await load(file.path, true);
             const sample = new Uint8Array(buf, 0, Math.min(buf.byteLength, 2048));
-            return sample.includes(0) ? hexView(buf) : textView(new TextDecoder().decode(buf));
+            return sample.includes(0) ? binaryView(file, buf) : textView(new TextDecoder().decode(buf));
         },
         later: async (file) => [note(file.note)],
     };
