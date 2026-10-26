@@ -1,4 +1,4 @@
-// Writes the printable case halves as binary STL (mm). Run: node print/exportStl.mjs
+// Writes the tray and the plain lid blank as binary STL (mm). The lid blank is the input of `npm run product`, which adds the logo and writes the printable mechanical/case-lid.stl.
 import { writeFileSync } from "node:fs";
 import { loadScene } from "../tests/lib/webapp.mjs";
 
@@ -34,7 +34,7 @@ lid.position.y = DIM.wall;
 const zUp = (part) => new THREE.Group().add(part).rotateX(Math.PI / 2);
 [["case-tray", zUp(tray)], ["case-lid", zUp(lid)]].forEach(([name, group]) => {
     const { buf, count } = toStl(group);
-    writeFileSync(new URL(`./${name}.stl`, import.meta.url), buf);
+    writeFileSync(new URL(name === "case-lid" ? "../scripts/product/base/case-lid.stl" : `./${name}.stl`, import.meta.url), buf);
     const box = new THREE.Box3().setFromObject(group);
     console.log(name, count, "tris", box.getSize(new THREE.Vector3()).toArray().map((v) => v.toFixed(1)).join(" × "));
 });

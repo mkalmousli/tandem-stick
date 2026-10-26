@@ -15,7 +15,8 @@
         const node = el("a", { display: "flex", alignItems: "center", gap: px(SPACE.sm), textDecoration: "none", borderRadius: px(RADIUS.sm), flexShrink: "0" });
         node.href = "#/home";
         const logo = el("img", { width: px(SIZE.icon), height: px(SIZE.icon), display: "block" }, { alt: "", src: LOGO_URL });
-        const name = label("Tandem Stick", { size: FONT.md, weight: FONT.bold });
+        const name = app.ui.wordmark.wordmark("TANDEM STICK", 14);
+        name.style.margin = "2px 0";
         const tag = label("DIY · untested", { size: FONT.xs, tone: "muted" });
         interact(node, { native: true, onActivate: () => {}, draw: (target, palette, flags) => { target.style.outline = focusRing(palette, flags.ring); } });
         return add(node, logo, add(el("div", { display: "flex", flexDirection: "column", lineHeight: "1.1" }), name, tag));
@@ -54,6 +55,8 @@
         const node = navLink("explore", "Build");
         node.href = "#/explore?tab=build";
         node._route = "";
+        // Already in the explorer: switch tab in place so the chosen path and step are kept.
+        app.dom.on(node, "click", (evt) => { if (app.router.current().name === "explore" && app.ex.setState) { evt.preventDefault(); app.ex.setState({ tab: "build" }); } });
         return node;
     }
 

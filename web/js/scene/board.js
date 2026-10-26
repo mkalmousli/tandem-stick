@@ -95,14 +95,14 @@ function buildBoard() {
     const group = new THREE.Group();
     const anchors = new Map();
     const byId = new Map();
-    group.add(new THREE.Mesh(new THREE.BoxGeometry(DIM.pcbW, DIM.pcbT, DIM.pcbD), mats.pcb));
-    group.add(...PASSIVES.map(buildPart));
-    [...CHIPS.map(buildChip), ...PORTS.map(placePort)].forEach((part) => {
+    const decor = [new THREE.Mesh(new THREE.BoxGeometry(DIM.pcbW, DIM.pcbT, DIM.pcbD), mats.pcb)];
+    group.add(...decor);
+    [...CHIPS, ...PASSIVES].map(buildChip).concat(PORTS.map(placePort)).forEach((part) => {
         group.add(part);
         byId.set(part.userData.id, part);
         anchors.set(part.userData.id, part.position.clone());
     });
-    return { group, anchors, byId };
+    return { group, anchors, byId, decor };
 }
 
 

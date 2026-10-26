@@ -156,7 +156,7 @@
         { id: "print", title: "Print", build: () => [table({ rows: DOCS.print, boldFirst: true })] },
         { id: "check", title: "Before power on", build: () => [list(DOCS.checklist)] },
         { id: "parts", title: "Parts and cost", build: () => [...parts(), ...cost()] },
-        { id: "arch", title: "Architecture", build: () => [card(architecture()), para(PLAN.architecture, { size: FONT.sm })] },
+        { id: "arch", title: "Architecture", build: () => [card(app.ui.zoom.zoomable(architecture(), "Architecture")), para(PLAN.architecture, { size: FONT.sm })] },
         { id: "firmware", title: "Firmware plan", build: () => [...firmware(), ...security()] },
         { id: "roadmap", title: "Roadmap and risks", build: () => [...roadmap(), table({ head: ["Risk", "Impact", "Response"], rows: PLAN.risks, boldFirst: true }), list(PLAN.open)] },
     ];

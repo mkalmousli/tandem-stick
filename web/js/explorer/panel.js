@@ -9,13 +9,12 @@
     const { stack, row } = app.ui.layout;
     const { kvList, badge } = app.ui.card;
     const { table } = app.ui.table;
-    const { fileLink } = app.ui.download;
     const { TOUR, ITEMS, PART_ORDER, findItem, MODES, PAIRING, LAYER_INFO, SIZE_FACTS, BOARD_FACTS } = app.data;
     const { ROLES } = app.content;
 
     const TABS = [["tour", "Tour"], ["parts", "Parts"], ["signal", "Signal"], ["build", "Build"], ["guide", "Guide"], ["files", "Files"]];
     // Which state keys make each view redraw, so a window is not rebuilt for changes it does not show.
-    const KEYS = { tour: ["tour"], parts: ["selected", "isolate", "explode"], signal: ["mode", "layers"], build: ["build", "buildMode"], guide: ["guide"], files: ["file"] };
+    const KEYS = { tour: ["tour"], parts: ["selected", "isolate", "explode"], signal: ["mode", "layers"], build: ["build", "buildMode"], guide: ["guide"], files: ["fileGroup"] };
     const EXPLODE_ON = 1;
 
     const group = (title, ...children) => add(stack(SPACE.sm), label(title.toUpperCase(), { size: FONT.xs, weight: FONT.bold, tone: "muted" }), children);
@@ -44,7 +43,7 @@
 
     function itemCard(item) {
         const has = item.files && item.files.length;
-        const files = has ? group("Download the real files", ...item.files.map(([text, href]) => fileLink(text, href))) : null;
+        const files = has ? group("Part files", app.ex.relatedFiles.relatedFiles(item.files)) : null;
         return [
             add(row(SPACE.sm), heading(2, item.name), badge(item.section || item.type, "muted")),
             item.part ? label(item.part, { size: FONT.sm, tone: "muted", mono: true }) : null,
@@ -65,7 +64,7 @@
             add(picker, button({ label: item.name, kind: "tab", pressed: id === state.selected, onClick: () => selectItem(id, { fly: true }) }));
         });
         const item = state.selected ? findItem(state.selected) : null;
-        const hint = para("Pick a part here, or click it in the 3D view. Each part has its real files to download.", { size: FONT.sm, tone: "muted" });
+        const hint = para("Pick a part here, or click it in the 3D view. Each part links to its files.", { size: FONT.sm, tone: "muted" });
         return { body: [picker, item ? itemCard(item) : [hint, group("Board", kvList(BOARD_FACTS))]], foot: pager() };
     }
 
@@ -123,14 +122,17 @@
             subscribe(() => btn.setPressed(state.tab === id));
             add(tabs, btn);
         });
-        const draw = () => {
+        const draw = (keep) => {
             const out = VIEWS[state.tab]();
             const parts = Array.isArray(out) ? { body: out } : out;
-            view.render(() => { body.scrollTop = 0; add(body, parts.body); });
+            const top = body.scrollTop;
+            view.render(() => { add(body, parts.body); body.scrollTop = keep ? top : 0; });
             footView.render(() => { foot.style.display = parts.foot ? "flex" : "none"; if (parts.foot) add(foot, parts.foot); });
         };
         draw();
-        subscribe((patch) => { if ("tab" in patch || KEYS[state.tab].some((key) => key in patch)) draw(); });
+        // Toggling a layer or role redraws in place; anything else starts at the top.
+        const STAY = ["layers", "mode"];
+        subscribe((patch) => { if ("tab" in patch || KEYS[state.tab].some((key) => key in patch)) draw(!("tab" in patch) && Object.keys(patch).every((key) => STAY.includes(key))); });
         panel.bodyNode = body;
         return add(panel, tabs, body, foot);
     }

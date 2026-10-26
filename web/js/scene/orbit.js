@@ -12,7 +12,7 @@ const clamp = (value, lo, hi) => Math.min(hi, Math.max(lo, value));
 const wrapAngle = (angle) => ((((angle + Math.PI) % TWO_PI) + TWO_PI) % TWO_PI) - Math.PI;
 const ease = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
 
-function createOrbit(canvas, camera, { onClick, onTouch = () => {} }) {
+function createOrbit(canvas, camera, { onClick = () => {}, onTouch = () => {}, passive = false }) {
     const view = { theta: 0.65, phi: 1.0, radius: 160, target: new THREE.Vector3(0, 3.6, 0) };
     const pointers = new Map();
     let fly = null;
@@ -139,13 +139,15 @@ function createOrbit(canvas, camera, { onClick, onTouch = () => {} }) {
         action();
     }
 
-    on(canvas, "pointerdown", onDown);
-    on(canvas, "pointermove", onMove);
-    on(canvas, "pointerup", onUp);
-    on(canvas, "pointercancel", onUp);
-    on(canvas, "wheel", onWheel, { passive: false });
-    on(canvas, "keydown", onKey);
-    on(canvas, "contextmenu", (evt) => evt.preventDefault());
+    if (!passive) {
+        on(canvas, "pointerdown", onDown);
+        on(canvas, "pointermove", onMove);
+        on(canvas, "pointerup", onUp);
+        on(canvas, "pointercancel", onUp);
+        on(canvas, "wheel", onWheel, { passive: false });
+        on(canvas, "keydown", onKey);
+        on(canvas, "contextmenu", (evt) => evt.preventDefault());
+    }
 
     return { view, update, flyTo, setSpin: (on) => { auto.rate = on ? 0.35 : 0; } };
 }

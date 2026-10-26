@@ -29,7 +29,7 @@
             ["R3", "One host controls up to about 20 targets.", "Pairing simulation, then range test"],
             ["R4", "Input latency of a few ms over ESP-NOW.", "Latency test with a logic analyser"],
             ["R5", "Powered only from the USB port, about 150 mA average.", "Current measurement"],
-            ["R6", "Case printable in PETG without supports; every size derives from part sizes.", "STL and dimension checks"],
+            ["R6", "Case printable in PETG (supports only under the lid plate); every size derives from part sizes.", "STL and dimension checks"],
             ["R7", "Fab-ready board: 4 layers, 33 × 17.4 mm, DRC clean.", "Gerber checks, hardware/drc.py"],
             ["R8", "Parts for one stick around €14 when building five.", "BOM total, quotes"],
             ["R9", "Only paired sticks may send input to a target.", "Security review (see below)"],
@@ -40,7 +40,7 @@
             "*Power:* AP2112K-3.3 from the port's 5 V; 600 mA budget against about 150 mA average.",
             "*Board:* 33 × 17.4 mm, 4 layers (signal, GND, 3V3, GND), 1.6 mm. The antenna end is a keep-out on all layers.",
             "*Connector:* USB-A plug formed by the board itself: a 12 mm tab with four pads on the bottom face. Order ENIG (gold) finish.",
-            "*Case:* two PETG halves, snap-fit lid, 3 perimeters, 0.2 mm layers, no supports.",
+            "*Case:* two PETG halves, snap-fit lid, 3 perimeters, 0.2 mm layers, supports under the lid plate only.",
             "*Known gaps:* the LED runs at 3.3 V and may be dim; no schematic or ERC (the nets live in build_board.py).",
         ],
         firmware: [
@@ -101,7 +101,7 @@
         tools: [
             ["To order", "A board from a PCB fab (4 layers, 1.6 mm). Parts from your usual supplier. Optional: an assembly service for the small parts."],
             ["To solder", "Hot air or reflow for the module and regulator, a fine-tip iron for the plug, flux, tweezers, magnification."],
-            ["To print", "Any FDM printer with a 0.4 mm nozzle and PETG. Two small parts, no supports."],
+            ["To print", "Any FDM printer with a 0.4 mm nozzle and PETG. Two small parts, supports only under the lid plate."],
             ["To flash", "A computer with a USB port. Firmware is not released yet, so this step has to wait."],
         ],
         build: [
@@ -118,8 +118,8 @@
             ["Material", "PETG"],
             ["Nozzle and layer", "0.4 mm nozzle, 0.2 mm layers"],
             ["Walls", "3 perimeters (1.2 mm), 15% infill"],
-            ["Supports", "None"],
-            ["Orientation", "Tray open side up. Lid top face down on the bed."],
+            ["Supports", "Under the lid plate only"],
+            ["Orientation", "Tray open side up. Lid logo side up, lip on the bed."],
             ["Fit", "0.3 mm gap around the board. If the lid is tight, scale the lid by 99%, not the tray."],
         ],
         checklist: [
@@ -139,7 +139,7 @@
     };
 
     const DOWNLOADS = {
-        lead: "Everything needed to order the board and print the case. Checksums can be verified in your browser.",
+        lead: "Everything needed to order the board and print the case.",
         warning: "These files have never been built or checked on real hardware. Fill the supplier column in the BOM and check rotation offsets in your fab's preview before ordering. Order the minimum quantity first.",
         bundles: {
             "bundles/tandem-gerbers.zip": ["Gerbers and drill", "Upload to the PCB fab"],
@@ -151,32 +151,33 @@
         order: [
             "Upload tandem-gerbers.zip to a fab (4 layers, 1.6 mm, 33 × 17.4 mm).",
             "For assembly, upload bom.csv and pos.csv from the assembly bundle and add supplier part numbers.",
-            "Print case-tray.stl and case-lid.stl in PETG, 0.2 mm layers, no supports. The lid is already oriented flat-side down.",
+            "Print case-tray.stl and case-lid.stl in PETG, 0.2 mm layers. Both files are already oriented for printing: the lid logo side up with supports under its plate.",
             "Choose ENIG (gold) surface finish so the plug pads survive repeated insertions.",
         ],
         flash: "Flash: short TP1 (BOOT) to TP2 (GND) while plugging in, then flash over native USB.",
     };
 
     const HOME = {
-        title: "Type once. Every machine follows.",
-        lead: "Tandem Stick is a DIY, open-hardware pair of USB sticks. Plug one in your computer and one in each machine you want to control. They talk by encrypted radio, so you never need cables, apps or a network.",
-        facts: [["46.5 mm", "Whole stick, plug included"], ["0 buttons", "Nothing to press or configure"], ["ESP-NOW", "Encrypted radio, no router"], ["~€10", "Parts for one stick"]],
+        title: "One stick controls many PCs.",
+        lead: "Plug one USB stick into your computer and one into each machine you want to control. Drive one machine, several, or all at once, over radio. Nothing to install on the others. Use our app or script it with the API.",
+        facts: [["46.5 mm", "About half a credit card, plug included"], ["0 buttons", "Nothing to press or configure"], ["Scriptable", "Own app and open API"], ["~€10", "Parts for one stick"]],
         steps: [
             ["Build or order sticks", "Order the board, solder eight parts, print the case. Every file is on the Downloads page."],
-            ["Plug one into your computer", "It becomes the host. Your computer sees a normal USB device, nothing to install."],
+            ["Plug one into your computer", "It is the host. Your computer sees a normal USB device."],
             ["Pair the others once", "Plug a target stick into each machine you want to control. Pairing is one short step."],
-            ["Type once, control all", "Your keyboard and mouse go to every paired machine at the same time. Updates arrive over the air."],
+            ["Type once, control all", "Your keyboard and mouse reach every paired machine at once. Or run a script."],
         ],
         why: [
             ["Nothing to install", "The target only sees a normal USB keyboard, mouse or drive. No app, no driver, no account."],
             ["Works on anything with USB", "Windows, macOS, Linux, kiosks, signage players, locked-down machines, even a BIOS screen."],
             ["No cables, no network", "Sticks talk by radio directly. No Wi-Fi, no cloud, no remote desktop on the targets."],
             ["Same stick everywhere", "Host and target are the same board. The role comes from pairing, not from a different part."],
-            ["Open and hackable", "Schematic, board, case and firmware plan are open. Change anything and build your own."],
+            ["One, many or all", "Send input to a single machine, a chosen group, or every paired one at once. Planned: the firmware is not written yet."], ["Two-way link", "Targets answer back, so the host knows a keystroke arrived. The radio is two-way but not full duplex: it sends and listens in turns."], ["App and API", "Control it from our app, or script it: send keys, clicks and commands from your own code."], ["Open and hackable", "Schematic, board, case and firmware plan are open. Change anything and build your own."],
             ["Honest status", "This is an untested DIY design. Nothing here is sold, and nobody promises it works until you test it."],
         ],
         cases: [
-            ["Home and office PCs", "Everyday users", "Control a desktop, a mini PC and a laptop from one keyboard, even when each runs a different system."],
+            ["Home office", "Everyday users", "One keyboard and mouse drive your desktop, mini PC and laptop, even when each runs a different system.", "home"],
+            ["Automated installs", "IT, labs, repair shops", "Replay a keystroke script to install Windows or Linux on many bare machines at once, with no network boot.", "install"],
             ["Present on every screen", "Teachers, speakers", "Click through slides once and every classroom or lobby screen follows.", "present"],
             ["Fix many computers", "IT admins, labs", "Run the same command on a row of machines with no remote tools installed.", "admin"],
             ["Shop and sign displays", "Shops, cafés", "Update menus and promos across every screen without visiting each one.", "kiosk"],

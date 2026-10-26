@@ -10,6 +10,7 @@
 
     const FAVICON = "assets/logo.svg";
     const ROUTES = ["home", "explore", "downloads"];
+    const NEEDS = { explore: ["explore"] }; // script groups a page needs before it can draw (see main.js)
     const TITLE = "Tandem Stick: DIY wireless USB control sticks";
 
     function resetPage() {
@@ -37,19 +38,24 @@
         const view = region(main);
         const show = ({ name, query }) => {
             setState({ route: name });
-            view.render(() => {
-                main.style.opacity = "0";
-                add(main, app.pages[name].build(query));
-                requestAnimationFrame(() => { main.style.opacity = "1"; syncViewport(); });
+            app.need(...(NEEDS[name] || [])).then(() => (name === "explore" ? app.scene.glb.ensureModel() : null)).then(() => {
+                if (state.route !== name) return;
+                view.render(() => {
+                    main.style.opacity = "0";
+                    add(main, app.pages[name].build(query));
+                    requestAnimationFrame(() => { main.style.opacity = "1"; syncViewport(); });
+                });
+                window.scrollTo(0, 0);
+                const boot = document.getElementById("boot");
+                if (boot) { boot.style.opacity = "0"; setTimeout(() => boot.remove(), 300); }
             });
-            window.scrollTo(0, 0);
         };
         onChange(show);
         show(current());
     }
 
     function start() {
-        ROUTES.forEach((name) => register(name, app.pages[name]));
+        ROUTES.forEach((name) => register(name, {}));
         resetPage();
         watchViewport();
         subscribe((patch) => { if ("theme" in patch) { saveTheme(state.theme); applyTheme(); } });

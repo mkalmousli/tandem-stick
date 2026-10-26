@@ -10,7 +10,7 @@
     const PHONE_ZOOM = 1.18;
     const { TOUR } = app.data;
 
-    const DEFAULTS = { tab: "tour", tour: 0, build: 0, buildMode: "full", guide: "glance", file: "board", spin: true, selected: null, isolate: false, mode: "target", explode: 1, layers: { usb: true, ctrl: true, power: true, radio: true } };
+    const DEFAULTS = { tab: "tour", tour: 0, build: 0, buildMode: null, guide: "glance", file: "board", spin: true, selected: null, isolate: false, mode: "target", explode: 1, layers: { usb: true, ctrl: true, power: true, radio: true } };
     const PRESET_KEYS = { 1: "front", 2: "rear", 3: "top", 4: "iso" };
     const TOAST_MS = 2200;
     const MIN_STAGE_H = 420;

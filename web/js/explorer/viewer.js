@@ -114,8 +114,8 @@
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, app.scene.studio.MAX_RATIO));
         renderer.setClearColor(0x000000, 0);
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.05;
+        renderer.toneMapping = app.scene.studio.TONE.map;
+        renderer.toneMappingExposure = app.scene.studio.TONE.exposure;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         const scene = new THREE.Scene();
@@ -206,8 +206,10 @@
             stopSpin();
             const chip = item.type !== "port";
             const at = model.anchor(id, state.explode);
-            const base = item.type === "piece" ? FOCUS_PIECE : chip ? FOCUS_CHIP : { ...FOCUS_PORT, theta: FACE_THETA[item.face] };
-            orbit.flyTo({ ...base, radius: base.radius * live.fit, x: at.x * FOCUS_PULL, z: at.z * FOCUS_PULL });
+            const base = { ...(item.type === "piece" ? FOCUS_PIECE : chip ? FOCUS_CHIP : { ...FOCUS_PORT, theta: FACE_THETA[item.face] }) };
+            const fit = item.size ? Math.min(1, Math.max(0.24, Math.max(...item.size) * 3.4 / base.radius)) : 1;
+            if (item.back) base.phi = Math.PI - base.phi; // bottom-side parts are seen from underneath
+            orbit.flyTo({ ...base, radius: base.radius * fit * live.fit, x: at.x * FOCUS_PULL, z: at.z * FOCUS_PULL });
         }
 
         function preset(name) {
@@ -269,7 +271,8 @@
             if (state.tab === "signal") emit("preset", "fleet");
             else if (wasSignal) emit("preset", "iso");
         });
-        subscribe((patch) => { if ("isolate" in patch || "selected" in patch) { model.isolate(state.isolate ? state.selected : null); model.refresh(); } });
+        subscribe((patch) => { if ("selected" in patch) { const sel = findItem(state.selected); model.underside(!!(sel && sel.back)); }
+        if ("isolate" in patch || "selected" in patch) { model.isolate(state.isolate ? state.selected : null); model.refresh(); } });
         onCommand("preset", preset);
         onCommand("focus", focus);
         const bar = buildToolbar(wrap, orbit);

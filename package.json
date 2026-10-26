@@ -10,7 +10,8 @@
     "test": "node --test tests/*.test.mjs",
     "build": "node scripts/build-site.mjs",
     "serve": "node scripts/build-site.mjs && python3 -m http.server 8765 -d dist",
-    "stl": "node mechanical/exportStl.mjs"
+    "stl": "node mechanical/exportStl.mjs",
+    "product": "bash scripts/product/build.sh"
   },
   "engines": { "node": ">=20" }
 }

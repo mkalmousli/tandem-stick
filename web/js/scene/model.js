@@ -1,6 +1,7 @@
 (() => {
 // Assembles the product and drives the exploded view.
 const { mats } = app.scene.materials;
+const { useBlenderModel } = app.scene.blenderModel;
 const { DIM } = app.data;
 const { buildTray, buildLid } = app.scene.enclosure;
 const { buildBoard } = app.scene.board;
@@ -24,6 +25,8 @@ function buildModel() {
     const board = buildBoard();
     const lid = buildLid();
     const flow = buildFlow();
+    const blender = app.assets && app.assets.model;
+    if (blender && ["case-tray", "case-lid", "pcb"].every((id) => blender.has(id))) useBlenderModel(blender, { tray, board, lid });
     board.group.add(flow.group);
     tray.userData.id = "case-tray";
     board.group.userData.id = "pcb";
@@ -74,7 +77,11 @@ function buildModel() {
             obj.visible = !id || within(obj, id);
         });
         flow.refresh();
+        flow.group.visible = !id;
     }
+
+    // Bottom-side parts are seen from underneath, so the tray floor steps aside.
+    const underside = (on) => { tray.visible = !on; };
 
     function refresh() {
         flow.refresh();
@@ -87,7 +94,7 @@ function buildModel() {
             obj.receiveShadow = true;
         }
     });
-    return { root, byId, pickables, isolate, setExplode, anchor, refresh, update: (seconds) => { flow.update(seconds); fleet.update(seconds); } };
+    return { root, byId, pickables, isolate, underside, setExplode, anchor, refresh, quiet: () => { flow.group.visible = false; fleet.group.visible = false; }, update: (seconds) => { flow.update(seconds); fleet.update(seconds); } };
 }
 
 

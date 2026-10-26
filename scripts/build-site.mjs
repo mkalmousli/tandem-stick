@@ -13,7 +13,7 @@ rmSync(dist, { recursive: true, force: true });
 cpSync(join(root, "web"), dist, { recursive: true });
 
 const copy = (from, to = from) => { mkdirSync(join(files, to, ".."), { recursive: true }); cpSync(join(root, from), join(files, to), { recursive: true }); };
-["hardware/fab", "hardware/renders", "hardware/tandem.pretty", "hardware/stick.kicad_pcb", "hardware/stick.kicad_pro", "hardware/build_board.py", "hardware/drc.py", "mechanical/case-tray.stl", "mechanical/case-lid.stl"].forEach((p) => copy(p));
+["hardware/fab", "hardware/tandem.pretty", "hardware/stick.kicad_pcb", "hardware/stick.kicad_pro", "hardware/build_board.py", "hardware/drc.py", "mechanical/case-tray.stl", "mechanical/case-lid.stl", "hardware/3d"].forEach((p) => copy(p));
 
 const bundle = (name, paths) => {
     mkdirSync(join(files, "bundles"), { recursive: true });
@@ -22,6 +22,7 @@ const bundle = (name, paths) => {
 bundle("tandem-gerbers.zip", ["hardware/fab/gerbers"]);
 bundle("tandem-assembly.zip", ["hardware/fab/bom.csv", "hardware/fab/pos.csv"]);
 bundle("tandem-case-stl.zip", ["mechanical"]);
+bundle("tandem-layers-3d.zip", ["hardware/3d"]);
 bundle("tandem-kicad-project.zip", ["hardware/stick.kicad_pcb", "hardware/stick.kicad_pro", "hardware/tandem.pretty", "hardware/build_board.py", "hardware/drc.py"]);
 
 const walk = (dir) => readdirSync(dir).flatMap((n) => (statSync(join(dir, n)).isDirectory() ? walk(join(dir, n)) : [join(dir, n)]));
