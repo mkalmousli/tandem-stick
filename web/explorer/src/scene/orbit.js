@@ -3,7 +3,7 @@ import * as THREE from "./three.js";
 import { on } from "../dom.js";
 import { MOTION } from "../theme.js";
 
-const LIMITS = { phiMin: 0.05, phiMax: 1.6, radiusMin: 12, radiusMax: 320, pan: 60 };
+const LIMITS = { phiMin: 0.02, phiMax: Math.PI - 0.02, radiusMin: 12, radiusMax: 320, pan: 60 };
 const SPEED = { rotate: 0.008, wheel: 0.001, key: 0.06, keyZoom: 1.08, pan: 0.0015 };
 const CLICK_SLOP = 5;
 const TWO_PI = Math.PI * 2;
@@ -12,7 +12,7 @@ const clamp = (value, lo, hi) => Math.min(hi, Math.max(lo, value));
 const wrapAngle = (angle) => ((((angle + Math.PI) % TWO_PI) + TWO_PI) % TWO_PI) - Math.PI;
 const ease = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
 
-export function createOrbit(canvas, camera, { onClick }) {
+export function createOrbit(canvas, camera, { onClick, onTouch = () => {} }) {
     const view = { theta: 0.65, phi: 1.0, radius: 160, target: new THREE.Vector3(0, 3.6, 0) };
     const pointers = new Map();
     let fly = null;
@@ -83,6 +83,7 @@ export function createOrbit(canvas, camera, { onClick }) {
         pointers.set(evt.pointerId, { x: evt.clientX, y: evt.clientY });
         travel = 0;
         fly = null;
+        onTouch();
     }
 
     function pinchDistance() {
@@ -116,6 +117,7 @@ export function createOrbit(canvas, camera, { onClick }) {
     function onWheel(evt) {
         evt.preventDefault();
         fly = null;
+        onTouch();
         zoom(Math.exp(evt.deltaY * SPEED.wheel));
     }
 

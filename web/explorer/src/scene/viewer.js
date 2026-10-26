@@ -20,6 +20,7 @@ const PRESET_LABELS = [["front", "Front"], ["rear", "Rear"], ["top", "Top"], ["i
 const FACE_THETA = { front: 0, rear: Math.PI, side: Math.PI / 2 };
 const FOCUS_PORT = { phi: 1.25, radius: 38 };
 const FOCUS_CHIP = { theta: 0.45, phi: 0.85, radius: 42 };
+const FOCUS_PIECE = { theta: 0.6, phi: 0.95, radius: 85 };
 const FOCUS_PULL = 0.55;
 const FOV = 35;
 const PORTRAIT_FIT = 1.45;
@@ -131,7 +132,7 @@ export function createViewer(parent) {
 
     const size = { w: 1, h: 1 };
     const live = { explode: state.explode, hover: null, fit: 1, first: true };
-    const orbit = createOrbit(canvas, camera, { onClick: (x, y) => handleClick(pick(x, y)) });
+    const orbit = createOrbit(canvas, camera, { onTouch: () => { stopSpin(); }, onClick: (x, y) => handleClick(pick(x, y)) });
 
     const ray = new THREE.Raycaster();
     const ndc = new THREE.Vector2();
@@ -195,16 +196,22 @@ export function createViewer(parent) {
         requestAnimationFrame(frame);
     }
 
+    // The tour's opening move must not cancel the default spin; any later move does.
+    const born = performance.now();
+    const stopSpin = () => { if (state.spin && performance.now() - born > 1500) setState({ spin: false }); };
+
     function focus(id) {
         const item = findItem(id);
         if (!item) return;
-        const chip = item.type === "chip";
+        stopSpin();
+        const chip = item.type !== "port";
         const at = model.anchor(id, state.explode);
-        const base = chip ? FOCUS_CHIP : { ...FOCUS_PORT, theta: FACE_THETA[item.face] };
+        const base = item.type === "piece" ? FOCUS_PIECE : chip ? FOCUS_CHIP : { ...FOCUS_PORT, theta: FACE_THETA[item.face] };
         orbit.flyTo({ ...base, radius: base.radius * live.fit, x: at.x * FOCUS_PULL, z: at.z * FOCUS_PULL });
     }
 
     function preset(name) {
+        stopSpin();
         const cfg = PRESETS[name];
         orbit.flyTo({ ...cfg, radius: cfg.radius * live.fit, x: 0, z: 0 });
     }
@@ -258,9 +265,12 @@ export function createViewer(parent) {
         model.refresh();
     });
     subscribe((patch) => { if ("mode" in patch || "layers" in patch || "tab" in patch) model.refresh(); });
+    const applyIsolate = () => { model.isolate(state.isolate ? state.selected : null); model.refresh(); };
+    subscribe((patch) => { if ("isolate" in patch || "selected" in patch) applyIsolate(); });
     onCommand("preset", preset);
     onCommand("focus", focus);
     buildControls();
+    orbit.setSpin(state.spin);
     requestAnimationFrame(frame);
     return { el: wrap, resize };
 }

@@ -90,6 +90,7 @@ export function start() {
     const tag = (id, pos, text) => tagPending.push([id, pos.clone(), text]);
 
     // steps -----------------------------------------------------------------------------------------------
+    let lidForce = null, ledSkip = 0, manualIdx = null;
     const idle = (l, extra = []) => [`${l.name} ready`, ...extra];
     const hostLines = (t, list) => list.filter(([at]) => t >= at).map(([, s]) => s);
     const STEPS = [
@@ -98,12 +99,12 @@ export function start() {
           fn(t) {
               laps.forEach((l) => { l.g.visible = false; });
               const g = HS.g; g.visible = true; g.scale.setScalar(1.7); g.position.set(0, 1.6, 0); g.rotation.y = -.5 + t * .22;
-              HS.lid.position.y = .5 + seg(t, 3, 5.2) * 1.9 - seg(t, 12.5, 14, 0) * 0;
-              HS.setLed([C.red, C.blue, C.green, C.white][Math.floor(t / 2.2) % 4]);
+              HS.lid.position.y = .5 + (lidForce ?? seg(t, 3, 5.2)) * 1.9;
+              HS.setLed([C.red, C.blue, C.green, C.white][(Math.floor(t / 2.2) + ledSkip) % 4]);
               const w = (v) => HS.g.localToWorld(v);
-              if (t > 3.8) tag("chip", w(new THREE.Vector3(.4, .6, 0)), "ESP32-S3 chip");
-              if (t > 7) tag("ant", w(new THREE.Vector3(-1.7, .5, 0)), "Antenna trace");
-              if (t > 10.5) tag("led", w(new THREE.Vector3(-1.4, 2.7, .5)), "Status light");
+              if (t > 3.8 || lidForce) tag("chip", w(new THREE.Vector3(.4, .6, 0)), "ESP32-S3 chip");
+              if (t > 7 || lidForce) tag("ant", w(new THREE.Vector3(-1.7, .5, 0)), "Antenna trace");
+              if (t > 10.5 || lidForce) tag("led", w(new THREE.Vector3(-1.4, 2.7, .5)), "Status light");
               tag("plug", w(new THREE.Vector3(3.6, .3, 0)), "USB-A plug");
           } },
         { title: "Plug in your own computer", dur: 12, cam: [[-13, 6, 13], [-11, 1.2, 0]], desc: "The host stick enumerates as a plain USB keyboard, so no driver is needed.",
@@ -155,12 +156,12 @@ export function start() {
           fn(t) {
               sticks.forEach((s) => { s.g.visible = true; s.g.scale.setScalar(SC); s.setLed(C.green); });
               HS.g.position.copy(plugAt(H)); SA.g.position.copy(plugAt(A)); SB.g.position.copy(plugAt(B)); SD.g.position.copy(plugAt(D));
-              const idx = t < 8 ? 0 : t < 12.5 ? 1 : 2, tl = targets[idx], ts = [SA, SB, SD];
+              const idx = manualIdx ?? (t < 8 ? 0 : t < 12.5 ? 1 : 2), tl = targets[idx], ts = [SA, SB, SD];
               const hp = radio(HS); targets.forEach((l, i) => link(hp, radio(ts[i]), i === idx ? 0xffff55 : 0x507070, 4 + i * .8));
               sel.visible = true; sel.position.set(tl.x, .05, tl.z); sel.rotation.z = t * .8;
               ts[idx].setLed(C.white);
               const k = ((t * .9) % 1); packet(hp, radio(ts[idx]), k, C.gold, 4);
-              H.lines = ["hotkey: next target", `> sending to ${tl.name}`]; targets.forEach((l, i) => { l.lines = i === idx ? ["keys received", "> typing..."] : ["idle"]; });
+              H.lines = ["click a laptop to pick it", `> sending to ${tl.name}`]; targets.forEach((l, i) => { l.lines = i === idx ? ["keys received", "> typing..."] : ["idle"]; });
               tag("host", radio(HS).add(new THREE.Vector3(0, 2.4, 0)), "HOST");
               ts.forEach((s, i) => tag("t" + i, radio(s).add(new THREE.Vector3(0, 2.4, 0)), targets[i].name));
           } },
@@ -186,14 +187,61 @@ export function start() {
     const $ = (id) => document.getElementById(id);
     const list = $("steps"), say = $("say"), scrub = $("scrub"), play = $("play"), status = $("status");
     STEPS.forEach((s, i) => { const li2 = document.createElement("li"); li2.innerHTML = `<b><span class="n" style="display:inline">${i + 1}.</span> ${s.title}</b><span>${s.desc}</span>`; li2.onclick = () => go(i); list.append(li2); });
+    const ob = { yaw: 0, pitch: 0, zoom: 1, tyaw: 0, tpitch: 0, tzoom: 1 };
     let cur = Math.min(STEPS.length - 1, Math.max(0, (parseInt(location.hash.slice(1), 10) || 1) - 1)), t = 0, playing = true;
     const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(); let camInit = false;
-    function go(i) { cur = (i + STEPS.length) % STEPS.length; t = 0; history.replaceState(null, "", "#" + (cur + 1)); [...list.children].forEach((e, k) => e.classList.toggle("on", k === cur)); list.children[cur].scrollIntoView({ block: "nearest" }); }
+    function go(i) { cur = (i + STEPS.length) % STEPS.length; t = 0; lidForce = null; ledSkip = 0; manualIdx = null; ob.tyaw = ob.tpitch = 0; ob.tzoom = 1; history.replaceState(null, "", "#" + (cur + 1)); [...list.children].forEach((e, k) => e.classList.toggle("on", k === cur)); list.children[cur].scrollIntoView({ block: "nearest" }); }
     $("prev").onclick = () => go(cur - 1); $("next").onclick = () => go(cur + 1);
     play.onclick = () => { playing = !playing; play.textContent = playing ? "❚❚ Pause" : "▶ Play"; };
     scrub.oninput = () => { t = (scrub.value / 1000) * STEPS[cur].dur; playing = false; play.textContent = "▶ Play"; };
     addEventListener("keydown", (e) => { if (e.key === "ArrowRight") go(cur + 1); else if (e.key === "ArrowLeft") go(cur - 1); else if (e.key === " " && e.target === document.body) { e.preventDefault(); play.click(); } });
     function typed(text, n) { let out = "", left = n; text.split("*").forEach((part, i) => { const s = part.slice(0, Math.max(0, left)); left -= part.length; out += i % 2 ? `<b>${s}</b>` : s; }); return out; }
+
+    // hands-on: drag to look around, wheel to zoom, click things, type on your own keyboard -------------------------
+    const pause = () => { playing = false; play.textContent = "▶ Play"; };
+    const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), ptr = new Map(); let travel = 0;
+    const FLY_MS = 850, keys = [], bufs = { host: "", A: "", B: "", C: "" };
+    const pickGroup = (x, y) => {
+        const r = cv.getBoundingClientRect(); ndc.set(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, camera);
+        for (const h of ray.intersectObjects(scene.children, true)) {
+            for (let o = h.object; o; o = o.parent) {
+                const l = laps.findIndex((q) => q.g === o); if (l >= 0 && o.visible) return { lap: l };
+                const s2 = sticks.findIndex((q) => q.g === o); if (s2 >= 0 && o.visible) return { stick: s2 };
+            }
+        }
+        return null;
+    };
+    cv.addEventListener("pointerdown", (e) => { cv.setPointerCapture(e.pointerId); ptr.set(e.pointerId, [e.clientX, e.clientY]); travel = 0; });
+    cv.addEventListener("pointermove", (e) => {
+        const p = ptr.get(e.pointerId); if (!p) return;
+        const dx = e.clientX - p[0], dy = e.clientY - p[1]; p[0] = e.clientX; p[1] = e.clientY; travel += Math.abs(dx) + Math.abs(dy);
+        if (travel > 5) { ob.tyaw -= dx * .006; ob.tpitch = Math.max(-.6, Math.min(.9, ob.tpitch + dy * .005)); ob.yaw = ob.tyaw; ob.pitch = ob.tpitch; }
+    });
+    cv.addEventListener("pointerup", (e) => {
+        ptr.delete(e.pointerId); if (travel > 5) return;
+        const h = pickGroup(e.clientX, e.clientY); if (!h) return;
+        if (cur === 0 && h.stick === 0) { lidForce = HS.lid.position.y > 1.4 ? 0 : 1; ledSkip++; pause(); }
+        else if (cur === 5) { const i = h.lap ?? h.stick; if (i > 0) { manualIdx = i - 1; pause(); } }
+    });
+    cv.addEventListener("wheel", (e) => { e.preventDefault(); ob.tzoom = Math.max(.35, Math.min(1.8, ob.tzoom * Math.exp(e.deltaY * .001))); }, { passive: false });
+    addEventListener("keydown", (e) => {
+        if (e.ctrlKey || e.metaKey || e.altKey || !(e.target === document.body || e.target === cv)) return;
+        const ch = e.key === "Backspace" ? "\b" : e.key.length === 1 && e.key !== " " ? e.key.toUpperCase() : "";
+        if (!ch) return;
+        if (cur !== 4 && cur !== 5) go(4);
+        pause(); const to = cur === 5 ? (manualIdx ?? 0) : 0;
+        if (ch === "\b") { bufs.host = bufs.host.slice(0, -1); bufs["ABC"[to]] = bufs["ABC"[to]].slice(0, -1); return; }
+        bufs.host = (bufs.host + ch).slice(-18); keys.push({ ch, to, at: performance.now(), done: false });
+    });
+    function liveFrame(now) {
+        for (let i = keys.length - 1; i >= 0; i--) { const k = keys[i], age = now - k.at; if (age > FLY_MS + 350) { keys.splice(i, 1); continue; } if (!k.done && age >= FLY_MS) { k.done = true; const n = "ABC"[k.to]; bufs[n] = (bufs[n] + k.ch).slice(-18); } }
+        if (cur !== 4 && cur !== 5) return;
+        if (!bufs.host && !keys.length) return;
+        const ti = cur === 5 ? (manualIdx ?? 0) : 0, tl = [A, B, D][ti], ts = [SA, SB, SD][ti], hp = radio(HS), ap = radio(ts);
+        H.lines = ["> type on your keyboard", "> " + bufs.host]; tl.lines = ["keys received", "> " + bufs["ABC"[ti]]];
+        keys.forEach((k) => { if (k.to !== ti) return; const f = (now - k.at) / FLY_MS; if (f > 0 && f < 1) { packet(hp, ap, f, C.gold, 3.2); tag("k" + (k.at | 0), hp.clone().lerp(ap, f).add(new THREE.Vector3(0, 3.8, 0)), "0x" + hex2(k.ch.charCodeAt(0)) + hex2(k.ch.charCodeAt(0) + 9) + " (encrypted)"); } });
+        if (keys.some((k) => k.done && now - k.at < FLY_MS + 300)) ts.setLed(C.white);
+    }
 
     function resize() { const w = view.clientWidth, h = view.clientHeight; renderer.setSize(Math.max(1, w), Math.max(1, h), false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
     addEventListener("resize", resize); resize(); go(cur);
@@ -209,6 +257,7 @@ export function start() {
         laps.forEach((l) => { l.g.visible = true; l.lines = idle(l); }); pk.forEach((m) => { m.visible = false; }); rg.forEach((m) => { m.visible = false; }); links.forEach((l) => { l.visible = false; }); sel.visible = false;
         pi = ri = li = 0; tagPending.length = 0;
         st.fn(t);
+        liveFrame(now);
         const blink = Math.floor(now / 500) % 2;
         laps.forEach((l) => drawScreen(l.screen, l.name, l.lines, blink));
         // camera: pull back on narrow views so the whole scene still fits
@@ -216,7 +265,12 @@ export function start() {
         pos.sub(look).multiplyScalar(Math.max(1.3, 1.9 / asp)).add(look);
         if (!camInit) { camPos.copy(pos); camLook.copy(look); camInit = true; }
         const e = 1 - Math.exp(-dt * 3); camPos.lerp(pos, e); camLook.lerp(look, e);
-        camera.position.copy(camPos); camera.lookAt(camLook);
+        const eo = 1 - Math.exp(-dt * 10); ob.yaw += (ob.tyaw - ob.yaw) * eo; ob.pitch += (ob.tpitch - ob.pitch) * eo; ob.zoom += (ob.tzoom - ob.zoom) * eo;
+        const off = camPos.clone().sub(camLook).multiplyScalar(ob.zoom);
+        off.applyAxisAngle(new THREE.Vector3(0, 1, 0), ob.yaw);
+        const rt = new THREE.Vector3(0, 1, 0).cross(off).normalize(); off.applyAxisAngle(rt.negate(), ob.pitch);
+        if (off.y < .6) off.y = .6;
+        camera.position.copy(camLook).add(off); camera.lookAt(camLook);
         camera.updateMatrixWorld(); renderer.render(scene, camera);
 
         // tags
@@ -230,7 +284,7 @@ export function start() {
         const line = [...st.say].reverse().find(([at]) => t >= at) || st.say[0];
         say.innerHTML = typed(line[1], Math.floor((t - line[0]) * 45));
         if (playing) scrub.value = Math.round((t / st.dur) * 1000);
-        status.textContent = `Step ${cur + 1} of ${STEPS.length}: ${st.title}  |  ${t.toFixed(1)}s / ${st.dur}s  |  ← → keys, space to pause`;
+        status.textContent = `Step ${cur + 1} of ${STEPS.length}: ${st.title}  |  ${t.toFixed(1)}s / ${st.dur}s  |  drag to look · click · type on your keyboard`;
         requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);

@@ -25,6 +25,9 @@ export function buildModel() {
     const lid = buildLid();
     const flow = buildFlow();
     board.group.add(flow.group);
+    tray.userData.id = "case-tray";
+    board.group.userData.id = "pcb";
+    lid.group.userData.id = "case-lid";
     root.add(tray, board.group, lid.group);
 
     // A closed copy of the stick: shell, lid and plug, no board.
@@ -41,6 +44,9 @@ export function buildModel() {
     root.add(fleet.group);
 
     const byId = new Map(board.byId);
+    byId.set("case-tray", tray);
+    byId.set("pcb", board.group);
+    byId.set("case-lid", lid.group);
     const pickables = [...byId.values()];
 
     function setExplode(amount) {
@@ -52,9 +58,22 @@ export function buildModel() {
 
     // World position of an item's centre when the model is exploded by `amount`.
     function anchor(id, amount) {
+        if (id === "case-lid") return new THREE.Vector3(0, DIM.wallTop + EXPLODE.lid * amount, 0);
+        if (id === "pcb") return new THREE.Vector3(0, DIM.pcbY + EXPLODE.board * amount, 0);
+        if (id === "case-tray") return new THREE.Vector3(0, 3, 0);
         const local = board.anchors.get(id);
         if (!local) return new THREE.Vector3(0, focusY(amount), 0);
         return local.clone().add(new THREE.Vector3(0, DIM.pcbY + EXPLODE.board * amount, 0));
+    }
+
+    // Show only the selected part (and what belongs to it) while isolating.
+    const within = (obj, id) => { for (; obj; obj = obj.parent) if (obj.userData.id === id) return true; return false; };
+    function isolate(id) {
+        root.traverse((obj) => {
+            if (!obj.isMesh || fleet.group.getObjectById(obj.id)) return;
+            obj.visible = !id || within(obj, id);
+        });
+        flow.refresh();
     }
 
     function refresh() {
@@ -68,5 +87,5 @@ export function buildModel() {
             obj.receiveShadow = true;
         }
     });
-    return { root, byId, pickables, setExplode, anchor, refresh, update: (seconds) => { flow.update(seconds); fleet.update(seconds); } };
+    return { root, byId, pickables, isolate, setExplode, anchor, refresh, update: (seconds) => { flow.update(seconds); fleet.update(seconds); } };
 }

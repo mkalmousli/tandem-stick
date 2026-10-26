@@ -12,8 +12,11 @@ export function readLink() {
     const patch = {};
     if (TABS.includes(q.get("tab"))) patch.tab = q.get("tab");
     if (q.get("mode") === "host" || q.get("mode") === "target") patch.mode = q.get("mode");
-    if (q.has("explode")) patch.explode = Math.min(1, Math.max(0, Number(q.get("explode")) || 0));
-    if (q.get("spin") === "1") patch.spin = true;
+    if (location.hash.length > 1) {
+        patch.explode = Math.min(1, Math.max(0, Number(q.get("explode")) || 0));
+        patch.spin = q.get("spin") === "1";
+    }
+    if (q.get("isolate") === "1") patch.isolate = true;
     setState(patch);
     if (q.has("step")) goTour(Number(q.get("step")) || 0);
     else if (findItem(q.get("part"))) selectItem(q.get("part"), { fly: true });
@@ -28,6 +31,7 @@ export function writeLink() {
     if (state.explode > 0.5) q.set("explode", "1");
     if (state.mode !== "target") q.set("mode", state.mode);
     if (state.spin) q.set("spin", "1");
+    if (state.isolate) q.set("isolate", "1");
     return `${location.pathname}${location.search}#${q}`;
 }
 

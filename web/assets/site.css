@@ -114,3 +114,17 @@ footer.site { background: var(--surface); border-top: 2px solid var(--hi); color
 footer.site a { color: var(--accent); }
 .hero h1 { text-shadow: 2px 2px 0 #000; color: #fff; }
 .hero .lead { color: #fff; }
+
+/* smooth page changes */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .12s; }
+.untested { background: #ffe14d; color: #000; text-align: center; font-size: 13px; padding: 4px 12px; border-bottom: 2px solid #000; }
+.untested b { text-transform: uppercase; letter-spacing: .04em; }
+.doc-fig { background: var(--surface); border: 2px solid var(--line); padding: 12px; margin: 12px 0; }
+.doc-fig svg { width: 100%; height: auto; display: block; }
+.doc-fig figcaption { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.steps-list { counter-reset: s; list-style: none; padding: 0; display: grid; gap: 10px; }
+.steps-list li { counter-increment: s; background: var(--surface); border: 2px solid var(--line); padding: 10px 12px 10px 52px; position: relative; }
+.steps-list li::before { content: counter(s); position: absolute; left: 10px; top: 8px; width: 30px; height: 30px; background: #000080; color: #fff; display: grid; place-items: center; font-weight: 700; }
+.coming { opacity: .8; border-style: dashed; }
+@media print { header.site, .untested, footer.site, .toc { display: none; } }

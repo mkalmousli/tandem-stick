@@ -7,11 +7,11 @@
 <a href="https://mkalmousli.github.io/tandem-stick/downloads.html">Downloads</a>
 </p>
 
-![license](https://img.shields.io/badge/license-MIT-5b9bff) ![status](https://img.shields.io/badge/status-concept-ffb454) ![stack](https://img.shields.io/badge/three.js-r160-5df2d0) ![build](https://img.shields.io/badge/build-none-8b7bff)
+![license](https://img.shields.io/badge/license-MIT-5b9bff) ![status](https://img.shields.io/badge/status-untested-ffb454) ![stack](https://img.shields.io/badge/three.js-r160-5df2d0) ![build](https://img.shields.io/badge/build-none-8b7bff)
 
-Open hardware concept: a button-free USB stick that pairs with other sticks by radio, so one host controls many machines. One stick per target, one for you.
+Open hardware DIY project: a button-free USB stick that pairs with other sticks by radio, so one host controls many machines. One stick per target, one for you.
 
-**Status: concept.** Board design is DRC-clean and the case is printable, but no board has been built or tested on hardware.
+**Status: untested DIY design.** The board passes design-rule checks and the case is printable, but nothing has been built or tested on hardware. Firmware is coming later.
 
 The landing page is a retro-styled 3D walkthrough: seven animated steps (meet the stick, plug in, pair, join a target, type across, many machines, radio updates) that you can pause and scrub.
 
@@ -22,7 +22,7 @@ The landing page is a retro-styled 3D walkthrough: seven animated steps (meet th
 | [How it works](web/index.html) | Animated 3D steps: plug in, pair, link, type across, fleet, radio updates |
 | [Explore 3D](web/explore.html) | Guided tour, exploded view, clickable parts, signal paths, shareable links, keyboard shortcuts |
 | [Plan](web/plan.html) | Requirements, architecture, firmware, security, roadmap with gates, costs, compliance, risks |
-| [Test lab](web/test.html) | Automated design checks, pairing/latency simulator, Web Serial bring-up tool, first-article checklist |
+| [Design docs](web/docs.html) | Board and case drawings, pinout, parts, build guide, print settings |
 | [Downloads](web/downloads.html) | Gerbers, BOM, placement, KiCad project, case STL, SHA-256 checksums |
 
 ## Repository
@@ -45,6 +45,5 @@ Needs Node 20+ and the `zip` command. The pages use ES modules, so they must be 
 - Part numbers are candidate families; verify datasheets and stock before ordering.
 - Costs are ±30% estimates, not quotes.
 - No ESD diode, no schematic or ERC yet; see the [plan](web/plan.html#risks).
-- Selling radio hardware in the EU needs CE/RED/EMC compliance.
 
 Licence: MIT. Three.js is MIT, see `web/explorer/vendor/LICENSE-three`.

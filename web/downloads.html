@@ -4,7 +4,10 @@
 <body><main id="main" class="wrap">
 <h1 style="margin-top:40px">Downloads</h1>
 <p class="muted">Everything needed to order the board and print the case. Files are generated from the repository on every release; checksums can be verified in your browser.</p>
-<div class="callout">Concept files, not yet tested on hardware. Fill the LCSC column in the BOM and check rotation offsets in your fab's preview before ordering. Order the minimum quantity first.</div>
+<div class="callout"><b>Untested.</b> These files have never been built or checked on real hardware. Fill the LCSC column in the BOM and check rotation offsets in your fab's preview before ordering. Order the minimum quantity first.</div>
+
+<h2>Firmware</h2>
+<div class="grid"><div class="card coming"><h3>Firmware <span class="badge">coming later</span></h3><p class="muted">Not written or released yet. It will appear here once the first board has been built and tested. Until then you can only build the hardware.</p></div></div>
 
 <h2>Bundles</h2>
 <div class="grid" id="bundles"></div>
@@ -15,7 +18,7 @@
 
 <h2>Order a board</h2>
 <ol><li>Upload <code>tandem-gerbers.zip</code> to a fab (4 layers, 1.6 mm, 33 × 17.4 mm).</li><li>For assembly, upload <code>bom.csv</code> and <code>pos.csv</code> from the assembly bundle; add LCSC part numbers.</li><li>Print <code>case-tray.stl</code> and <code>case-lid.stl</code> in PETG, 0.2 mm layers, no supports. The lid is already oriented flat-side down.</li><li>Hand-solder the USB-A plug (J1).</li></ol>
-<p>Flash: short TP1 (BOOT) to TP2 (GND) while plugging in, then flash over native USB. Use the <a href="test.html#bringup">bring-up tool</a>.</p>
+<p>Flash: short TP1 (BOOT) to TP2 (GND) while plugging in, then flash over native USB.</p>
 </main>
 <script type="module">
 const fmt = (n) => n > 1024 ? (n / 1024).toFixed(1) + " KB" : n + " B";

@@ -18,10 +18,11 @@ export const state = {
     theme: initialTheme(),
     tab: "tour",
     tour: 0,
-    spin: false,
+    spin: true,
     selected: null,
+    isolate: false,
     mode: "target",
-    explode: 0,
+    explode: 1,
     layers: { usb: true, ctrl: true, power: true, radio: true },
     qty: 4,
 };

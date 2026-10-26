@@ -17,12 +17,12 @@ const TABS = [
 // Which state changes force the active tab to rebuild. Slider-driven fields are excluded on purpose.
 const REBUILD = {
     tour: ["tab", "tour"],
-    parts: ["tab", "selected"],
+    parts: ["tab", "selected", "isolate"],
     signal: ["tab", "mode", "layers"],
 };
 
 function buildHeader() {
-    return add(stack(SPACE.xs), label(PRODUCT.name, { size: FONT.xl, weight: 600 }), label("Guided tour, every part, and the signal paths. Costs and the roadmap are on the Plan page.", { size: FONT.sm, tone: "muted" }));
+    return add(stack(SPACE.xs), label(PRODUCT.name, { size: FONT.xl, weight: 600 }), label("Guided tour, every part, and the signal paths. Each part lists its real design files. The roadmap is on the Plan page.", { size: FONT.sm, tone: "muted" }));
 }
 
 function buildTabs() {
