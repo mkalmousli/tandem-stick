@@ -22,7 +22,7 @@
     async function load(path, binary) {
         const key = `${binary ? "b" : "t"}:${path}`;
         if (!cache.has(key)) {
-            cache.set(key, fetch(BASE + path).then((res) => {
+            cache.set(key, fetch(app.v(BASE + path)).then((res) => {
                 if (!res.ok) throw new Error(`${res.status}`);
                 return binary ? res.arrayBuffer() : res.text();
             }));

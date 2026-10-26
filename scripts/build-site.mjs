@@ -12,6 +12,12 @@ const files = join(dist, "files");
 rmSync(dist, { recursive: true, force: true });
 cpSync(join(root, "web"), dist, { recursive: true });
 
+// Stamp a content hash of the site into main.js and index.html, and publish it as version.json for the update check.
+const sources = (dir) => readdirSync(dir).flatMap((n) => (statSync(join(dir, n)).isDirectory() ? sources(join(dir, n)) : [join(dir, n)])).sort();
+const build = createHash("sha256").update(sources(dist).map((f) => relative(dist, f) + readFileSync(f).toString("hex")).join("")).digest("hex").slice(0, 10);
+["main.js", "index.html"].forEach((name) => writeFileSync(join(dist, name), readFileSync(join(dist, name), "utf8").replaceAll("__BUILD__", build)));
+writeFileSync(join(dist, "version.json"), JSON.stringify({ build }));
+
 const copy = (from, to = from) => { mkdirSync(join(files, to, ".."), { recursive: true }); cpSync(join(root, from), join(files, to), { recursive: true }); };
 ["hardware/fab", "hardware/tandem.pretty", "hardware/stick.kicad_pcb", "hardware/stick.kicad_pro", "hardware/build_board.py", "hardware/drc.py", "mechanical/case-tray.stl", "mechanical/case-lid.stl", "hardware/3d"].forEach((p) => copy(p));
 

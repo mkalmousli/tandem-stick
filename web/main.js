@@ -1,6 +1,20 @@
 // Entry point: loads only what the first screen needs, then fetches the rest on demand (no modules, no bundler).
 window.app = { scene: {}, ui: {}, pages: {}, ex: {}, story: {}, files: {}, assets: {} };
 
+// The build id is stamped in by scripts/build-site.mjs. Every file URL carries it, so a new build is never served from an old cache.
+const BUILD = "__BUILD__";
+app.v = (url) => (BUILD.startsWith("__") ? url : `${url}${url.includes("?") ? "&" : "?"}v=${BUILD}`);
+
+// Cached copy out of date? Ask the server (never cached) and reload once onto the new build.
+function checkUpdate() {
+    if (BUILD.startsWith("__")) return;
+    fetch(`version.json?t=${Date.now()}`, { cache: "no-store" }).then((res) => res.json()).then(({ build }) => {
+        if (build !== BUILD && !location.search.includes(build)) location.replace(`${location.pathname}?b=${build}${location.hash}`);
+    }).catch(() => {});
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) checkUpdate(); });
+checkUpdate();
+
 const GROUPS = {
     base: [
         "js/core/styles.js", "js/core/theme.js", "js/core/state.js", "js/core/dom.js", "js/core/router.js",
@@ -39,7 +53,7 @@ app.track = (promise) => {
 function script(src) {
     return app.track(new Promise((resolve, reject) => {
         const tag = document.createElement("script");
-        tag.src = src;
+        tag.src = app.v(src);
         tag.async = false; // downloads in parallel, runs in insertion order
         tag.onload = resolve;
         tag.onerror = () => reject(new Error(src));

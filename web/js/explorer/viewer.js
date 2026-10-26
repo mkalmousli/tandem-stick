@@ -100,6 +100,13 @@
         const hint = label(HINT, { size: FONT.xs, tone: "muted" });
         Object.assign(hint.style, { position: "absolute", left: px(SPACE.md), bottom: px(SPACE.md), pointerEvents: "none" });
         add(wrap, bar, hint);
+        // Phones: one swipeable row instead of a wrapped block, and no mouse-only hint.
+        app.dom.watchViewport((viewport) => {
+            const phone = app.ui.layout.isPhone(viewport);
+            Object.assign(bar.style, { flexWrap: phone ? "nowrap" : "wrap", right: phone ? px(SPACE.md) : "auto", overflowX: phone ? "auto" : "visible", scrollbarWidth: "none" });
+            [...bar.children].forEach((child) => { child.style.flexShrink = phone ? "0" : "1"; });
+            hint.style.display = phone ? "none" : "block";
+        });
         return bar;
     }
 

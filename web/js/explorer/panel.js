@@ -122,6 +122,12 @@
             subscribe(() => btn.setPressed(state.tab === id));
             add(tabs, btn);
         });
+        // Phones: tabs scroll sideways in one row, so the panel's content starts higher.
+        app.dom.watchViewport((viewport) => {
+            const phone = app.ui.layout.isPhone(viewport);
+            Object.assign(tabs.style, { flexWrap: phone ? "nowrap" : "wrap", overflowX: phone ? "auto" : "visible", scrollbarWidth: "none" });
+            [...tabs.children].forEach((child) => { child.style.flexShrink = phone ? "0" : "1"; });
+        });
         const draw = (keep) => {
             const out = VIEWS[state.tab]();
             const parts = Array.isArray(out) ? { body: out } : out;

@@ -37,7 +37,7 @@ async function material(doc, bin, index, cache) {
 
 // name -> { matrix (in the product frame), parts: [{ geometry, material name, make() }] }
 async function loadGlb(url = URL_GLB) {
-    const res = await fetch(url);
+    const res = await fetch(app.v(url));
     if (!res.ok) throw new Error(`${res.status}`);
     const { json: doc, bin } = split(await res.arrayBuffer());
     const cache = new Map();
