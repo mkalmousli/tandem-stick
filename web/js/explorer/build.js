@@ -54,16 +54,15 @@
         const nav = row(SPACE.sm);
         add(nav, button({ label: "Back", grow: true, onClick: () => go(at - 1) }), button({ label: at === steps.length - 1 ? "Done" : "Next", kind: "solid", grow: true, onClick: () => go(at + 1) }));
         const bench = state.buildMode === "bench";
-        return [
+        return { foot: add(stack(SPACE.sm), dots, nav), body: [
             kinds,
             label(`Step ${at + 1} of ${steps.length}`, { size: FONT.xs, tone: "muted" }),
             heading(2, title),
             para(text, { size: FONT.md }),
             button({ label: "Show it on the model", onClick: () => show(steps[at]) }),
-            dots, nav,
             bench ? callout(para("One stick and any computer is enough to test power, USB and the LED. Untested design: expect to debug.", { size: FONT.sm })) : null,
             at === steps.length - 1 && !bench ? add(stack(SPACE.sm), label("BEFORE FIRST POWER", { size: FONT.xs, weight: FONT.bold, tone: "muted" }), list(DOCS.checklist)) : null,
-        ];
+        ] };
     }
 
     app.ex.build = { buildView };

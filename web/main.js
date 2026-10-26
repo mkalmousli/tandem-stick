@@ -5,7 +5,7 @@ const SCRIPTS = [
     "vendor/three.js",
     "js/core/styles.js", "js/core/theme.js", "js/core/state.js", "js/core/dom.js", "js/core/router.js",
     "js/data/product.js", "js/data/content.js", "js/data/scenarios.js",
-    "js/ui/text.js", "js/ui/button.js", "js/ui/layout.js", "js/ui/card.js", "js/ui/table.js", "js/ui/svg.js", "js/ui/download.js", "js/ui/zoom.js", "js/ui/copy.js",
+    "js/ui/text.js", "js/ui/button.js", "js/ui/layout.js", "js/ui/card.js", "js/ui/copy.js", "js/ui/table.js", "js/ui/svg.js", "js/ui/download.js", "js/ui/zoom.js",
     "js/ui/header.js", "js/ui/notice.js", "js/ui/page.js",
     "js/explorer/state.js",
     "js/scene/studio.js", "js/scene/materials.js", "js/scene/ports.js", "js/scene/enclosure.js", "js/scene/board.js", "js/scene/flow.js", "js/scene/fleet.js", "js/scene/model.js", "js/scene/orbit.js",

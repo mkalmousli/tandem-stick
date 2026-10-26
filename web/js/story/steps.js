@@ -4,6 +4,7 @@
 
     const clamp01 = (value) => Math.min(1, Math.max(0, value));
     const ease = (t, from, to) => { const k = clamp01((t - from) / (to - from)); return k * k * (3 - 2 * k); };
+    const back = (t, from, to) => { const k = clamp01((t - from) / (to - from)); const c = 1.70158; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); };
     const SLIDE_IN = 7;
     const HERO_SCALE = 2;
     const STAGGER = 0.7;
@@ -49,9 +50,10 @@
             show: { hero: true },
             pose(s, t, now) {
                 s.hero.group.scale.setScalar(HERO_SCALE);
-                s.hero.group.position.set(0, 0.5, 0);
+                s.hero.group.position.set(0, 0.5 + Math.sin(now * 1.4) * 0.18, 0);
+                s.hero.group.rotation.z = Math.sin(now * 0.9) * 0.05;
                 s.hero.group.rotation.y = 0.7 + t * 0.4;
-                s.hero.setLidLift(ease(t, 1, 3) * 1.4);
+                s.hero.setLidLift(back(t, 1, 3.2) * 1.4);
                 s.hero.setLed(blink(now));
             },
             tags: (s) => [
@@ -66,7 +68,7 @@
             camera: { pos: [HOST_X - 2, 7, 17], look: [HOST_X - 2, 1.8, 0] },
             show: { host: true },
             pose(s, t) {
-                const away = SLIDE_IN * (1 - ease(t, 0.3, 2.2));
+                const away = SLIDE_IN * (1 - back(t, 0.3, 2.2));
                 plug(s.host.stick, s.host.device, s, away);
                 s.host.stick.setLed(t > 2.2 ? COLOR.led.blue : COLOR.led.off);
             },
@@ -80,7 +82,7 @@
             pose(s, t, now) {
                 plug(s.host.stick, s.host.device, s);
                 s.host.stick.setLed(COLOR.led.blue);
-                plugRight(s.host.blank, s.host.device, s, SLIDE_IN * (1 - ease(t, 0.3, 2)));
+                plugRight(s.host.blank, s.host.device, s, SLIDE_IN * (1 - back(t, 0.3, 2)));
                 const stage = t < 2.4 ? COLOR.led.red : t < 4 ? (Math.floor(now * 6) % 2 ? COLOR.led.blue : COLOR.led.off) : COLOR.led.green;
                 s.host.blank.setLed(stage);
                 s.rings[0].userData.at = t > 2.4 && t < 4 ? (t - 2.4) / 1.6 : -1;
@@ -98,7 +100,7 @@
                 plug(s.host.stick, s.host.device, s);
                 s.host.stick.setLed(COLOR.led.blue);
                 s.targets.forEach((slot, idx) => {
-                    const k = ease(t, 0.4 + idx * STAGGER, 2.2 + idx * STAGGER);
+                    const k = back(t, 0.4 + idx * STAGGER, 2.2 + idx * STAGGER);
                     plug(slot.stick, slot.device, s, SLIDE_IN * (1 - k));
                     slot.stick.setLed(k >= 1 ? COLOR.led.green : COLOR.led.off);
                 });

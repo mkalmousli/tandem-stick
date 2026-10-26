@@ -1,6 +1,6 @@
 // Files tab: every downloadable file with a live preview (3D for STL, a rendered board for Gerbers, tables for CSV, text for code).
 (() => {
-    const { el, add, on, track, region, themed } = app.dom;
+    const { el, add, on, track, region, themed, scroller } = app.dom;
     const { state, setState } = app.ex;
     const { SPACE, RADIUS, FONT, px } = app.styles;
     const { label, para } = app.ui.text;
@@ -35,6 +35,21 @@
         { id: "drc", name: "DRC runner", kind: "text", path: "hardware/drc.py", note: "Checks the board against fab rules" },
         { id: "fw", name: "Firmware", kind: "later", note: "Not written yet. It will appear here as a .bin you can flash." },
     ];
+
+    const MANIFEST = "manifest.json";
+    const BYTES_PER_ROW = 16;
+    const HEX_LIMIT = 4096;
+    const IMAGE_EXT = /\.(png|jpe?g|gif|webp|svg)$/i;
+    const kindOf = (path) => (/\.stl$/i.test(path) ? "stl" : /\.(csv|tsv)$/i.test(path) ? "csv" : /\.zip$/i.test(path) ? "zip" : IMAGE_EXT.test(path) ? "image" : "text");
+    const sizeText = (bytes) => (bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`);
+
+    // Everything in the manifest becomes previewable, curated entries first.
+    async function listFiles() {
+        const { files } = JSON.parse(await load(MANIFEST));
+        const known = new Set(FILES.map((file) => file.path).filter(Boolean));
+        const extra = files.filter((file) => !known.has(file.path)).map((file) => ({ id: file.path, name: file.path.split("/").pop(), kind: kindOf(file.path), path: file.path, note: `${file.path} · ${sizeText(file.bytes)}`, extra: true }));
+        return FILES.concat(extra);
+    }
 
     async function load(path, binary) {
         const key = `${binary ? "b" : "t"}:${path}`;
@@ -213,13 +228,13 @@
 
     function csvView(text) {
         const [head, ...rows] = csvRows(text);
-        return [copyRow(copyButton("Copy as CSV", () => text)), frame(table({ head, rows })), note(`${rows.length} rows. Copy pastes straight into a spreadsheet.`)];
+        return [copyRow(copyButton("Copy as CSV", () => text)), table({ head, rows, copy: false }), note(`${rows.length} rows. Copy pastes straight into a spreadsheet.`)];
     }
 
     // The whole file, selectable, in a scrolling box. Copy puts all of it on the clipboard.
     function textView(text) {
         const lines = text.split("\n");
-        const pre = el("pre", { margin: "0", padding: px(SPACE.md), overflow: "auto", height: px(TEXT_H), fontFamily: FONT.mono, fontSize: px(FONT.xs), lineHeight: "1.5", userSelect: "text", whiteSpace: "pre", boxSizing: "border-box", tabSize: "4" });
+        const pre = el("pre", { margin: "0", padding: px(SPACE.md), overflow: "auto", scrollbarWidth: "thin", height: px(TEXT_H), fontFamily: FONT.mono, fontSize: px(FONT.xs), lineHeight: "1.5", userSelect: "text", whiteSpace: "pre", boxSizing: "border-box", tabSize: "4" });
         themed(pre, { color: "text" });
         pre.textContent = text;
         pre.tabIndex = 0;
@@ -228,11 +243,58 @@
         return [copyRow(copyButton("Copy all", () => text, { fallback: select }), button({ label: "Select all", onClick: select })), frame(pre), note(`${lines.length.toLocaleString()} lines, ${(text.length / 1024).toFixed(1)} KB. The whole file is shown.`)];
     }
 
+    // Lists a zip's entries from its central directory (no decompression needed).
+    function zipEntries(buf) {
+        const view = new DataView(buf);
+        let end = buf.byteLength - 22;
+        while (end >= 0 && view.getUint32(end, true) !== 0x06054b50) end--;
+        if (end < 0) return [];
+        const count = view.getUint16(end + 10, true);
+        let at = view.getUint32(end + 16, true);
+        const names = new TextDecoder();
+        const out = [];
+        for (let i = 0; i < count && view.getUint32(at, true) === 0x02014b50; i++) {
+            const nameLen = view.getUint16(at + 28, true);
+            const extraLen = view.getUint16(at + 30, true);
+            const commentLen = view.getUint16(at + 32, true);
+            out.push([names.decode(new Uint8Array(buf, at + 46, nameLen)), sizeText(view.getUint32(at + 24, true))]);
+            at += 46 + nameLen + extraLen + commentLen;
+        }
+        return out;
+    }
+
+    function zipView(buf) {
+        const rows = zipEntries(buf);
+        return [table({ head: ["File in the zip", "Size"], rows, numeric: [1] }), note(`${rows.length} files. Download the zip to get them all.`)];
+    }
+
+    function hexView(buf) {
+        const bytes = new Uint8Array(buf, 0, Math.min(buf.byteLength, HEX_LIMIT));
+        const lines = [];
+        for (let i = 0; i < bytes.length; i += BYTES_PER_ROW) {
+            const chunk = [...bytes.slice(i, i + BYTES_PER_ROW)];
+            const hex = chunk.map((byte) => byte.toString(16).padStart(2, "0")).join(" ").padEnd(BYTES_PER_ROW * 3 - 1);
+            lines.push(`${i.toString(16).padStart(6, "0")}  ${hex}  ${chunk.map((byte) => (byte > 31 && byte < 127 ? String.fromCharCode(byte) : ".")).join("")}`);
+        }
+        return [...textView(lines.join("\n")), note(`Binary file: first ${bytes.length} bytes shown.`)];
+    }
+
+    function imageView(file) {
+        const img = el("img", { display: "block", width: "100%", height: "auto" }, { alt: file.name, src: BASE + file.path });
+        return [frame(zoomable(img, file.name))];
+    }
+
     const RENDER = {
+        zip: async (file) => zipView(await load(file.path, true)),
+        image: async (file) => imageView(file),
         board: async () => boardView(await loadBoard()),
         stl: async (file) => stlView(await load(file.path, true)),
         csv: async (file) => csvView(await load(file.path)),
-        text: async (file) => textView(await load(file.path)),
+        text: async (file) => {
+            const buf = await load(file.path, true);
+            const sample = new Uint8Array(buf, 0, Math.min(buf.byteLength, 2048));
+            return sample.includes(0) ? hexView(buf) : textView(new TextDecoder().decode(buf));
+        },
         later: async (file) => [note(file.note)],
     };
 
@@ -259,11 +321,21 @@
         ];
     }
 
+    const MORE_H = 140;
+
     function filesView() {
-        const picker = row(SPACE.xs);
-        FILES.forEach((file) => add(picker, button({ label: file.name, kind: "tab", pressed: file.id === state.file, onClick: () => setState({ file: file.id }) })));
-        const file = FILES.find((item) => item.id === state.file) || FILES[0];
-        return [picker, ...fileView(file)];
+        const holder = stack(SPACE.md);
+        const view = region(holder);
+        listFiles().then((all) => view.render(() => {
+            const file = all.find((item) => item.id === state.file) || all[0];
+            const picker = row(SPACE.xs);
+            all.filter((item) => !item.extra).forEach((item) => add(picker, button({ label: item.name, kind: "tab", pressed: item.id === file.id, onClick: () => setState({ file: item.id }) })));
+            const extras = all.filter((item) => item.extra);
+            const more = scroller(row(SPACE.xs, { overflowY: "auto", height: px(MORE_H), alignContent: "flex-start", flexWrap: "wrap" }));
+            extras.forEach((item) => add(more, button({ label: item.name, kind: "tab", pressed: item.id === file.id, onClick: () => setState({ file: item.id }) })));
+            add(holder, picker, extras.length ? add(stack(SPACE.xs), label(`ALL FILES (${extras.length} more)`, { size: FONT.xs, weight: FONT.bold, tone: "muted" }), more) : null, ...fileView(file));
+        })).catch(() => view.render(() => add(holder, note("The file list comes with the published site. Use the Downloads page."))));
+        return [holder];
     }
 
     app.ex.files = { FILES, filesView };

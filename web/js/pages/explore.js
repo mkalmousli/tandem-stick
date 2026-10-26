@@ -1,7 +1,7 @@
 // Explore page: the 3D viewer with its panel, keyboard shortcuts and deep links.
 (() => {
     const { el, add, on, themed, watchViewport, track } = app.dom;
-    const { state, setState, emit, subscribe } = app.ex;
+    const { state, setState, emit, subscribe, onCommand } = app.ex;
     const { SPACE, RADIUS, SIZE, FONT, px } = app.styles;
     const { isNarrow, isPhone } = app.ui.layout;
     const { label } = app.ui.text;
@@ -17,7 +17,7 @@
     const NARROW_STAGE = 0.62;
     const NARROW_MIN = 380;
     const NARROW_ASPECT = 1.2;
-    const HELP = "1-4 views · E explode · S spin · T tour · [ ] part · F focus · C copy link";
+    const HELP = "1-4 views · E explode · I isolate · S spin · T tour · [ ] part · F focus · C copy link";
 
     function toastBox(parent) {
         const box = el("div", { position: "absolute", right: px(SPACE.md), bottom: px(SPACE.md), padding: `${px(SPACE.sm)} ${px(SPACE.md)}`, borderRadius: px(RADIUS.sm), opacity: "0", transition: "opacity .15s", pointerEvents: "none" });
@@ -42,6 +42,7 @@
             t: () => actions.goTour(state.tour + 1 >= TOUR.length ? 0 : state.tour + 1),
             "[": () => actions.stepPart(-1),
             "]": () => actions.stepPart(1),
+            i: () => (state.selected ? setState({ isolate: !state.isolate }) : toast("Pick a part first")),
             f: () => state.selected && emit("focus", state.selected),
             c: () => emit("share", el("div")),
             "?": () => toast(HELP),
@@ -54,8 +55,39 @@
         });
     }
 
-    // Panel width follows what it shows: reading text needs less room than a board render.
-    const WIDTHS = { tour: 380, parts: 400, signal: 420, build: 420, guide: 520, files: 580 };
+    // One panel width for every tab, so nothing jumps; drag the left edge to change it.
+    const PANEL_KEY = "tandem-panel";
+    const PANEL_DEFAULT = 460;
+    const PANEL_MIN = 340;
+    const PANEL_SHARE = 0.65;
+    const GRIP = 12;
+
+    function savedWidth() {
+        try { return Number(localStorage.getItem(PANEL_KEY)) || PANEL_DEFAULT; } catch (err) { return PANEL_DEFAULT; }
+    }
+    function saveWidth(value) {
+        try { localStorage.setItem(PANEL_KEY, String(Math.round(value))); } catch (err) { /* width just will not persist */ }
+    }
+
+    // A thin handle on the panel's left edge. Reports the wanted width while dragging.
+    function buildGrip(getWidth, onWidth) {
+        const grip = el("div", { position: "absolute", top: "0px", bottom: "0px", width: px(GRIP), cursor: "col-resize", touchAction: "none", zIndex: "2" }, { role: "separator", "aria-orientation": "vertical", "aria-label": "Resize panel", tabindex: "0" });
+        const bar = el("div", { position: "absolute", top: "50%", left: "50%", width: "4px", height: "40px", marginLeft: "-2px", marginTop: "-20px", borderRadius: "2px" });
+        themed(bar, { background: "muted" });
+        bar.style.opacity = "0.5";
+        add(grip, bar);
+        let from = null;
+        on(grip, "pointerdown", (evt) => { from = { x: evt.clientX, w: getWidth() }; grip.setPointerCapture(evt.pointerId); bar.style.opacity = "1"; });
+        on(grip, "pointermove", (evt) => { if (from) onWidth(from.w + from.x - evt.clientX, false); });
+        const end = () => { if (from) onWidth(getWidth(), true); from = null; bar.style.opacity = "0.5"; };
+        on(grip, "pointerup", end);
+        on(grip, "pointercancel", end);
+        on(grip, "keydown", (evt) => {
+            const step = { ArrowLeft: 24, ArrowRight: -24 }[evt.key];
+            if (step) { evt.preventDefault(); onWidth(getWidth() + step, true); }
+        });
+        return grip;
+    }
 
     function build(query) {
         setState({ ...DEFAULTS, layers: { ...DEFAULTS.layers } });
@@ -67,20 +99,28 @@
         add(root, stage);
         const toast = toastBox(stage);
         bindKeys(toast);
+        onCommand("toast", toast);
         link.readLink(query);
         link.syncLink();
 
         let hidden = false;
-        let size = { stageW: 1, stageH: 1, pad: SPACE.lg, over: true };
+        let wanted = savedWidth();
+        let size = { stageW: 1, stageH: 1, pad: SPACE.lg, over: true, panelW: PANEL_DEFAULT };
+        const grip = buildGrip(() => size.panelW, (value, done) => { wanted = value; placePanel(); if (done) saveWidth(size.panelW); });
         const placePanel = () => {
             const { stageW, stageH, pad, over } = size;
             toggle.setPressed(hidden);
             toggle.textContent = hidden ? "Show panel" : "Hide panel";
             if (!over) {
+                viewer.setInset(0);
+                grip.style.display = "none";
                 Object.assign(panel.style, { position: "static", display: "flex", width: px(stageW), height: "auto", zoom: String(PHONE_ZOOM) });
                 return;
             }
-            const width = Math.min(WIDTHS[state.tab] || SIZE.panel, stageW - 2 * pad);
+            const width = Math.round(Math.max(PANEL_MIN, Math.min(wanted, stageW * PANEL_SHARE)));
+            size.panelW = width;
+            viewer.setInset(hidden ? 0 : width + pad);
+            Object.assign(grip.style, { left: "0px", display: hidden ? "none" : "block" });
             Object.assign(panel.style, { position: "absolute", display: hidden ? "none" : "flex", right: px(pad), top: px(pad + SIZE.control + SPACE.sm), width: px(width), height: px(stageH - 2 * pad - SIZE.control - SPACE.sm), zoom: "1", overflowY: "hidden" });
             panel.lastChild.style.overflowY = "auto";
         };
@@ -93,14 +133,14 @@
             const stageH = narrow ? Math.round(Math.max(NARROW_MIN, Math.min(viewport.h * NARROW_STAGE, inner * NARROW_ASPECT))) : free;
             Object.assign(root.style, { gap: px(pad), padding: px(pad) });
             Object.assign(stage.style, { width: px(inner), height: px(stageH) });
-            size = { stageW: inner, stageH, pad, over: !narrow };
+            Object.assign(size, { stageW: inner, stageH, pad, over: !narrow });
             if (narrow) { if (panel.parentNode !== root) add(root, panel); if (toggle.parentNode) toggle.remove(); panel.lastChild.style.overflowY = "visible"; }
-            else { if (panel.parentNode !== stage) add(stage, panel); if (toggle.parentNode !== stage) add(stage, toggle); }
+            else { if (panel.parentNode !== stage) add(stage, panel);
+            if (grip.parentNode !== panel) add(panel, grip); if (toggle.parentNode !== stage) add(stage, toggle); }
             Object.assign(toggle.style, { position: "absolute", right: px(pad), top: px(pad) });
             placePanel();
             viewer.resize(inner, stageH);
         };
-        subscribe((patch) => { if ("tab" in patch && size.over) placePanel(); });
         watchViewport(place);
         requestAnimationFrame(() => place(app.state.state.viewport)); // once attached, the top offset is known
         return root;

@@ -1,6 +1,7 @@
 // Data table inside a horizontally scrollable frame, so wide tables never break the page on phones.
 (() => {
-    const { el, add, themed } = app.dom;
+    const { el, add, themed, scroller } = app.dom;
+    const { copyButton } = app.ui.copy;
     const { FONT, SPACE, RADIUS, px } = app.styles;
 
     const ALIGN_RIGHT = "right";
@@ -24,14 +25,20 @@
     }
 
     // head: string[]; rows: (string|Node)[][]; numeric: indexes of right-aligned columns; foot: optional last row.
-    function table({ head, rows, numeric = [], foot, boldFirst = false }) {
+    function table({ head, rows, numeric = [], foot, boldFirst = false, copy = true }) {
         const frame = el("div", { overflowX: "auto", borderRadius: px(RADIUS.md), borderWidth: "1px", borderStyle: "solid" });
         themed(frame, { borderColor: "line", background: "surface" });
         const node = el("table", { borderCollapse: "collapse", width: "100%" });
         if (head) add(node, add(el("thead"), line(head, numeric, "th")));
         add(node, add(el("tbody"), rows.map((values) => line(values, numeric, "td", boldFirst))));
         if (foot) add(node, add(el("tfoot"), line(foot, numeric, "th")));
-        return add(frame, node);
+        add(frame, node);
+        scroller(frame);
+        if (!copy) return frame;
+        const all = [head, ...rows].filter(Boolean).map((values) => values.map((value) => (value instanceof Node ? value.textContent : value)).join("\t")).join("\n");
+        const wrap = el("div", { display: "flex", flexDirection: "column", gap: px(SPACE.xs), alignItems: "stretch" });
+        const bar = el("div", { display: "flex", justifyContent: "flex-end" });
+        return add(wrap, add(bar, copyButton("Copy table", () => all)), frame);
     }
 
     app.ui.table = { table };

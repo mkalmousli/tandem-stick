@@ -23,13 +23,15 @@
     };
     const PRESET_LABELS = [["front", "Front"], ["rear", "Rear"], ["top", "Top"], ["iso", "Iso"]];
     const FACE_THETA = { front: 0, rear: Math.PI, side: Math.PI / 2 };
-    const FOCUS_PORT = { phi: 1.25, radius: 38 };
-    const FOCUS_CHIP = { theta: 0.45, phi: 0.85, radius: 42 };
-    const FOCUS_PIECE = { theta: 0.6, phi: 0.95, radius: 85 };
+    const FOCUS_PORT = { phi: 1.2, radius: 72 };
+    const FOCUS_CHIP = { theta: 0.45, phi: 0.85, radius: 62 };
+    const FOCUS_PIECE = { theta: 0.6, phi: 0.95, radius: 100 };
     const FOCUS_PULL = 0.55;
     const FOV = 35;
     const PORTRAIT_FIT = 1.45;
     const EASE_RATE = 8;
+    const INSET_RATE = 6;
+    const BAR_MIN = 200;
     const SPIN_GUARD_MS = 1500;
     const GLASS_ALPHA = "b8";
     const BLUR = "blur(10px)";
@@ -78,7 +80,7 @@
     function buildToolbar(wrap, orbit) {
         const bar = row(SPACE.xs, {
             position: "absolute", left: px(SPACE.md), top: px(SPACE.md), padding: px(SPACE.xs), borderRadius: px(RADIUS.md),
-            borderWidth: "1px", borderStyle: "solid", backdropFilter: BLUR,
+            borderWidth: "1px", borderStyle: "solid", backdropFilter: BLUR, flexWrap: "wrap",
         });
         paint(bar, (node, palette) => {
             node.style.background = `${palette.surface}${GLASS_ALPHA}`;
@@ -86,12 +88,19 @@
         });
         PRESET_LABELS.forEach(([name, text]) => add(bar, button({ label: text, onClick: () => emit("preset", name) })));
         const spin = button({ label: "Spin", kind: "tab", pressed: state.spin, ariaLabel: "Auto-rotate", onClick: () => setState({ spin: !state.spin }) });
+        const explode = button({ label: "Explode", kind: "tab", pressed: state.explode > 0.5, ariaLabel: "Explode the model", onClick: () => setState({ explode: state.explode > 0.5 ? 0 : 1 }) });
+        const isolate = button({ label: "Isolate", kind: "tab", pressed: state.isolate, ariaLabel: "Isolate the selected part", onClick: () => (state.selected ? setState({ isolate: !state.isolate }) : emit("toast", "Pick a part first")) });
         const share = button({ label: "Copy link", ariaLabel: "Copy a link to this view", onClick: () => emit("share", share) });
-        add(bar, spin, share);
-        subscribe((patch) => { if ("spin" in patch) { spin.setPressed(state.spin); orbit.setSpin(state.spin); } });
+        add(bar, spin, explode, isolate, share);
+        subscribe((patch) => {
+            if ("spin" in patch) { spin.setPressed(state.spin); orbit.setSpin(state.spin); }
+            if ("explode" in patch) explode.setPressed(state.explode > 0.5);
+            if ("isolate" in patch) isolate.setPressed(state.isolate);
+        });
         const hint = label(HINT, { size: FONT.xs, tone: "muted" });
         Object.assign(hint.style, { position: "absolute", left: px(SPACE.md), bottom: px(SPACE.md), pointerEvents: "none" });
         add(wrap, bar, hint);
+        return bar;
     }
 
     function createViewer(parent) {
@@ -123,7 +132,7 @@
         const tip = buildTip(wrap);
 
         const size = { w: 1, h: 1 };
-        const live = { explode: state.explode, hover: null, fit: 1, first: true, running: true, last: 0 };
+        const live = { inset: 0, goalInset: 0, explode: state.explode, hover: null, fit: 1, first: true, running: true, last: 0 };
         const born = performance.now();
         // The tour's opening move must not cancel the default spin; any later move does.
         const stopSpin = () => { if (state.spin && performance.now() - born > SPIN_GUARD_MS) setState({ spin: false }); };
@@ -183,6 +192,7 @@
             model.setExplode(live.explode);
             orbit.view.target.y = focusY(live.explode);
             orbit.update(now);
+            applyInset(dt);
             model.update(now / 1000);
             trackHelper(hoverHelper, live.hover !== state.selected ? live.hover : null);
             trackHelper(selectHelper, state.selected);
@@ -205,6 +215,18 @@
             const cfg = PRESETS[name];
             orbit.flyTo({ ...cfg, radius: cfg.radius * live.fit, x: 0, z: name === "fleet" ? -30 : 0 });
         }
+
+        // Keeps the model centred in the part of the stage the panel leaves free.
+        function applyInset(dt) {
+            live.inset += (live.goalInset - live.inset) * Math.min(1, dt * INSET_RATE);
+            if (Math.abs(live.goalInset - live.inset) < 0.5) live.inset = live.goalInset;
+            if (live.inset > 0) camera.setViewOffset(size.w, size.h, live.inset / 2, 0, size.w, size.h);
+            else camera.clearViewOffset();
+            camera.updateProjectionMatrix();
+            bar.style.width = px(Math.max(BAR_MIN, size.w - live.goalInset - 2 * SPACE.md));
+        }
+
+        function setInset(amount) { live.goalInset = Math.max(0, amount); }
 
         function resize(w, h) {
             size.w = w;
@@ -250,7 +272,7 @@
         subscribe((patch) => { if ("isolate" in patch || "selected" in patch) { model.isolate(state.isolate ? state.selected : null); model.refresh(); } });
         onCommand("preset", preset);
         onCommand("focus", focus);
-        buildToolbar(wrap, orbit);
+        const bar = buildToolbar(wrap, orbit);
         orbit.setSpin(state.spin);
         loop(canvas, frame);
         track(() => {
@@ -258,7 +280,7 @@
             env.pmrem.dispose();
             renderer.dispose();
         });
-        return { el: wrap, resize };
+        return { el: wrap, resize, setInset };
     }
 
     app.ex.createViewer = createViewer;

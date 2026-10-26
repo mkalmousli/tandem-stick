@@ -1,13 +1,13 @@
 // Colour palettes: shades of black and white plus one accent. The only place colours are written down.
 (() => {
     const SCENE_DARK = {
-        tray: "#c9ccd3", lid: "#d99a1e", pcb: "#0e0e10", chip: "#0a0a0c", led: "#f2f2f4", cap: "#b8a070",
-        metal: "#a4a8b0", hole: "#0a0a0b", trace: "#6a7080", shadow: 0.55, env: 0.85,
+        tray: "#dcdee3", lid: "#d99a1e", pcb: "#14532d", chip: "#0a0a0c", led: "#f2f2f4", cap: "#b8a070",
+        metal: "#a4a8b0", hole: "#0a0a0b", trace: "#d9b45a", shadow: 0.55, env: 0.85,
         glow: ["#26262c", "#0c0c0e"],
     };
     const SCENE_LIGHT = {
-        tray: "#dcdee3", lid: "#c98a14", pcb: "#26262b", chip: "#0c0c0e", led: "#f2f2f4", cap: "#b8a070",
-        metal: "#9ea2aa", hole: "#0a0a0b", trace: "#5a5a62", shadow: 0.3, env: 0.85,
+        tray: "#dcdee3", lid: "#d99a1e", pcb: "#14532d", chip: "#0c0c0e", led: "#f2f2f4", cap: "#b8a070",
+        metal: "#9ea2aa", hole: "#0a0a0b", trace: "#d9b45a", shadow: 0.3, env: 0.85,
         glow: ["#ffffff", "#dcdce0"],
     };
 

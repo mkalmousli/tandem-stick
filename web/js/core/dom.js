@@ -3,6 +3,7 @@
     const { state, subscribe, pal } = app.state;
     const { SIZE } = app.styles;
 
+    const THUMB_ALPHA = "88";
     const painters = new Set(); // every themed element; applyTheme() is the only thing that walks it
     let activeScope = null;
 
@@ -111,9 +112,15 @@
         });
     }
 
+    // Thin scrollbar for an element that scrolls; the colour comes from the root.
+    const scroller = (node) => { node.style.scrollbarWidth = "thin"; return node; };
+
     function applyTheme() {
-        document.documentElement.style.colorScheme = state.theme;
+        const root = document.documentElement;
         const palette = pal();
+        root.style.colorScheme = state.theme;
+        root.style.scrollbarWidth = "thin";
+        root.style.scrollbarColor = `${palette.muted}${THUMB_ALPHA} transparent`; // inherited by every scroller below
         painters.forEach((entry) => entry.draw(entry.node, palette));
     }
 
@@ -159,5 +166,5 @@
 
     const focusRing = (palette, ring) => (ring ? `2px solid ${palette.accent}` : "none");
 
-    app.dom = { createScope, withScope, region, track, loop, el, svgEl, add, on, paint, themed, applyTheme, watchViewport, interact, focusRing, SIZE };
+    app.dom = { createScope, withScope, region, track, loop, el, svgEl, add, on, paint, themed, applyTheme, scroller, watchViewport, interact, focusRing, SIZE };
 })();

@@ -7,7 +7,7 @@
     const { W, H, createScreen } = app.story.screens;
 
     const COLOR = {
-        case: 0xe9e9ec, caseTop: 0xf0a92b, pcb: 0x1f8a5b, chip: 0x15171b, metal: 0xc7ccd4, dark: 0x2b2f38, body: 0x2f3440, key: 0x59616f,
+        case: 0xdcdee3, caseTop: 0xd99a1e, pcb: 0x14532d, gold: 0xd9b45a, chip: 0x15171b, metal: 0xc7ccd4, dark: 0x2b2f38, body: 0x2f3440, key: 0x59616f,
         led: { off: 0x30343c, white: 0xffffff, blue: 0x4aa3ff, green: 0x45e08a, red: 0xff5a5a, violet: 0xb48cff },
         radio: 0xffb224,
     };
@@ -19,6 +19,7 @@
     const SHADOW_RANGE = 50;
     const SHADOW_OPACITY = 0.3;
     const EASE = 3.2;
+    const SWAY = 0.35;
     const PORTRAIT_FIT = 2.1;
     const TAG_SHIFT = "translate(-50%, -120%)";
 
@@ -32,24 +33,70 @@
         return mesh;
     }
 
+    // Box with softly rounded edges, so highlights roll over the corners like moulded plastic.
+    const BEVEL = 0.07;
+    function rbox(w, h, d, color, parent, x = 0, y = 0, z = 0, rough, metal, round = 0.18) {
+        const r = Math.min(round, w / 2 - BEVEL, d / 2 - BEVEL);
+        const hw = w / 2 - BEVEL, hd = d / 2 - BEVEL;
+        const shape = new THREE.Shape();
+        shape.moveTo(-hw + r, -hd);
+        shape.lineTo(hw - r, -hd); shape.quadraticCurveTo(hw, -hd, hw, -hd + r);
+        shape.lineTo(hw, hd - r); shape.quadraticCurveTo(hw, hd, hw - r, hd);
+        shape.lineTo(-hw + r, hd); shape.quadraticCurveTo(-hw, hd, -hw, hd - r);
+        shape.lineTo(-hw, -hd + r); shape.quadraticCurveTo(-hw, -hd, -hw + r, -hd);
+        const depth = h - 2 * BEVEL;
+        const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: BEVEL, bevelSize: BEVEL, bevelSegments: 3, curveSegments: 6 });
+        geo.rotateX(-Math.PI / 2);
+        geo.translate(0, -depth / 2, 0);
+        const mesh = new THREE.Mesh(geo, lambert(color, rough, metal));
+        mesh.position.set(x, y, z);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        if (parent) parent.add(mesh);
+        return mesh;
+    }
+
+    // Soft round glow for LEDs and radio pulses.
+    let glowTexture = null;
+    function glow(color, size) {
+        if (!glowTexture) {
+            const c = document.createElement("canvas");
+            c.width = c.height = 64;
+            const g = c.getContext("2d");
+            const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+            grad.addColorStop(0, "rgba(255,255,255,1)");
+            grad.addColorStop(0.35, "rgba(255,255,255,0.45)");
+            grad.addColorStop(1, "rgba(255,255,255,0)");
+            g.fillStyle = grad;
+            g.fillRect(0, 0, 64, 64);
+            glowTexture = new THREE.CanvasTexture(c);
+        }
+        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture, color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+        sprite.scale.setScalar(size);
+        return sprite;
+    }
+
     // A stick lying along x with its plug at +x. `lid` can be lifted to show the board.
     function buildStick() {
         const group = new THREE.Group();
         const body = new THREE.Group();
-        box(STICK.len, STICK.h, STICK.d, COLOR.case, body);
-        box(STICK.len - 0.4, 0.12, STICK.d - 0.3, COLOR.pcb, body, 0, STICK.h / 2 + 0.02, 0);
+        rbox(STICK.len, STICK.h, STICK.d, COLOR.case, body, 0, 0, 0, 0.5, 0.05);
+        box(STICK.len - 0.4, 0.12, STICK.d - 0.3, COLOR.pcb, body, 0, STICK.h / 2 + 0.02, 0, 0.35, 0.1);
         box(1.5, 0.22, 1.2, COLOR.chip, body, -0.3, STICK.h / 2 + 0.17, 0);
         const lid = new THREE.Group();
-        box(STICK.len, 0.3, STICK.d, COLOR.caseTop, lid);
+        rbox(STICK.len, 0.3, STICK.d, COLOR.caseTop, lid, 0, 0, 0, 0.4, 0.05);
         const ledMat = new THREE.MeshBasicMaterial({ color: COLOR.led.off });
         const led = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.1, 0.4), ledMat);
         led.position.set(-1.3, 0.2, 0.4);
         lid.add(led);
+        const halo = glow(COLOR.led.off, 1.6);
+        halo.position.set(-1.3, 0.35, 0.4);
+        lid.add(halo);
         lid.position.y = STICK.h / 2 + 0.2;
         const plug = box(STICK.plug, 0.45, 1.25, COLOR.metal, body, STICK.len / 2 + STICK.plug / 2 - 0.3, 0, 0, 0.25, 1);
         plug.castShadow = false;
         group.add(body, lid);
-        return { group, lid, setLed: (color) => ledMat.color.set(color), setLidLift: (amount) => { lid.position.y = STICK.h / 2 + 0.2 + amount; } };
+        return { group, lid, setLed: (color) => { ledMat.color.set(color); halo.material.color.set(color); halo.visible = color !== COLOR.led.off; }, setLidLift: (amount) => { lid.position.y = STICK.h / 2 + 0.2 + amount; } };
     }
 
     // Laptop, monitor or kiosk. Returns the screen plane and the point where a stick's plug touches the case.
@@ -62,10 +109,10 @@
         let width = 6.4;
         let portY = 0.4;
         if (kind === "laptop") {
-            box(width, 0.3, 4.2, COLOR.body, group, 0, 0.15, 0);
+            rbox(width, 0.3, 4.2, COLOR.body, group, 0, 0.15, 0, 0.5, 0.3, 0.3);
             box(width - 1, 0.04, 2.2, COLOR.key, group, 0, 0.32, 0.6);
             const lid = new THREE.Group();
-            box(width, 4.2, 0.2, COLOR.dark, lid, 0, 2.1, 0);
+            rbox(width, 0.2, 4.2, COLOR.dark, lid, 0, 2.1, 0, 0.4, 0.3, 0.3).rotation.x = Math.PI / 2;
             lid.add(face);
             face.scale.set(width - 0.5, width - 0.5, 1);
             face.position.set(0, 2.15, 0.11);
@@ -76,7 +123,7 @@
             width = kind === "kiosk" ? 4.6 : 7.2;
             const height = width * (H / W) + 0.5;
             const baseY = kind === "kiosk" ? 2.6 : 1.4;
-            box(width, height, 0.25, COLOR.dark, group, 0, baseY + height / 2, 0);
+            rbox(width, 0.25, height, COLOR.dark, group, 0, baseY + height / 2, 0, 0.4, 0.3, 0.3).rotation.x = Math.PI / 2;
             face.scale.set(width - 0.4, width - 0.4, 1);
             face.position.set(0, baseY + height / 2, 0.14);
             group.add(face);
@@ -106,6 +153,7 @@
     function buildPulse(group) {
         const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.32, 12, 8), new THREE.MeshBasicMaterial({ color: COLOR.radio }));
         mesh.visible = false;
+        mesh.add(glow(COLOR.radio, 5));
         group.add(mesh);
         return mesh;
     }
@@ -213,7 +261,8 @@
             const k = Math.min(1, dt * EASE);
             cam.pos.lerp(cam.goalPos, k);
             cam.look.lerp(cam.goalLook, k);
-            camera.position.copy(cam.pos);
+            const sway = performance.now() / 1000;
+            camera.position.set(cam.pos.x + Math.sin(sway * 0.35) * SWAY, cam.pos.y + Math.sin(sway * 0.27) * SWAY * 0.5, cam.pos.z);
             camera.lookAt(cam.look);
             targets.concat([host]).forEach((slot) => { slot.device.tex.needsUpdate = true; });
             renderer.render(scene, camera);
