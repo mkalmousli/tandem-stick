@@ -1,7 +1,7 @@
 // Shared header, footer and theme for every page.
 export const REPO = "https://github.com/mkalmousli/tandem-stick";
 const KEY = "tandem-theme";
-const PAGES = [["index.html", "World"], ["overview.html", "Overview"], ["explore.html", "Explore 3D"], ["plan.html", "Plan"], ["test.html", "Test"], ["downloads.html", "Downloads"]];
+const PAGES = [["index.html", "How it works"], ["overview.html", "Overview"], ["explore.html", "Explore 3D"], ["plan.html", "Plan"], ["test.html", "Test"], ["downloads.html", "Downloads"]];
 
 function storedTheme() {
     try { const t = localStorage.getItem(KEY); if (t === "dark" || t === "light") return t; } catch (err) { /* storage blocked */ }

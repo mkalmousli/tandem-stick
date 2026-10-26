@@ -87,10 +87,30 @@ body.explorer main { flex: 1; min-height: 0; display: flex; }
 
 footer.site { border-top: 1px solid var(--line); margin-top: 72px; padding: 24px 0; color: var(--muted); font-size: .9rem; }
 footer.site .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
-header.site .brand { display: inline-flex; align-items: center; gap: 8px; }
-header.site .brand img { border-radius: 7px; }
-.card { transition: transform .2s, box-shadow .2s, border-color .2s; }
-a.card.link:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 10px 30px -12px var(--accent); }
-body.world header.site { position: fixed; inset: 0 0 auto 0; background: rgba(6,12,24,.45); backdrop-filter: blur(10px); border-color: rgba(255,255,255,.08); z-index: 20; }
-body.world header.site, body.world header.site a { color: #e6eeff; }
-body.world footer.site { display: none; }
+/* Retro desktop skin: silver bevels, navy title bars, no rounding, VGA-ish colours. */
+:root { --bg:#008080; --surface:#c0c0c0; --raised:#c0c0c0; --line:#808080; --text:#000; --muted:#404040; --accent:#000080; --on-accent:#fff; --ok:#006000; --bad:#a00000; --warn:#806000;
+  --sans: Tahoma, "MS Sans Serif", Verdana, Geneva, sans-serif; --mono: "Courier New", Courier, monospace; --hi:#fff; --lo:#404040; }
+:root[data-theme="dark"] { --bg:#000030; --surface:#202030; --raised:#303048; --line:#6060a0; --text:#e8e8f8; --muted:#a8a8c8; --accent:#ffff55; --on-accent:#000; --ok:#55ff55; --bad:#ff5555; --warn:#ffaa00; --hi:#5858a0; --lo:#000010; }
+html, body { font-family: var(--sans); font-size: 14px; }
+*, *::before, *::after { border-radius: 0 !important; }
+body { background: var(--bg); color: var(--text); }
+h1, h2, h3 { font-family: var(--sans); letter-spacing: 0; }
+main { color: var(--text); }
+.card, pre, .log, .callout, .stat, table { background: var(--surface); border: 2px solid; border-color: var(--hi) var(--lo) var(--lo) var(--hi); box-shadow: 1px 1px 0 #000; }
+.card, .callout { color: var(--text); }
+.muted { color: var(--muted) !important; }
+.btn, header.site nav a, .badge { border: 2px solid; border-color: var(--hi) var(--lo) var(--lo) var(--hi); background: var(--raised); color: var(--text); box-shadow: none; text-decoration: none; }
+.btn:active, header.site nav a[aria-current="page"] { border-color: var(--lo) var(--hi) var(--hi) var(--lo); }
+.btn.primary { background: var(--accent); color: var(--on-accent); }
+header.site { background: var(--surface); border-bottom: 2px solid var(--lo); box-shadow: 0 2px 0 var(--hi) inset; }
+header.site, header.site a, header.site .brand { color: var(--text); }
+header.site .brand img { image-rendering: pixelated; }
+a.card.link:hover { transform: none; background: var(--accent); color: var(--on-accent); }
+a.card.link:hover .muted { color: var(--on-accent) !important; }
+.card h3 { margin-top: 0; }
+a { color: var(--accent); }
+:root[data-theme="dark"] a { color: #88ccff; }
+footer.site { background: var(--surface); border-top: 2px solid var(--hi); color: var(--text); }
+footer.site a { color: var(--accent); }
+.hero h1 { text-shadow: 2px 2px 0 #000; color: #fff; }
+.hero .lead { color: #fff; }
