@@ -9,6 +9,8 @@
     const { fileLink } = app.ui.download;
     const { table } = app.ui.table;
     const { badge } = app.ui.card;
+    const { zoomable } = app.ui.zoom;
+    const { copyButton } = app.ui.copy;
     const g = app.files.gerber;
 
     const BASE = "files/";
@@ -16,7 +18,8 @@
     const BACKDROP = "#0b1220";
     const BOARD_FILL = "#14532d";
     const BOARD_PAD = 14;
-    const CODE_LINES = 70;
+    const RATIO = 6;
+    const TEXT_H = 520;
     const SPIN_SPEED = 0.006;
     const STL_COLOR = 0xffb224;
     const cache = new Map();
@@ -145,11 +148,11 @@
         const box = g.bounds(data.layers.Edge_Cuts);
         const height = Math.round(width * ((box.y1 - box.y0) / (box.x1 - box.x0)) + 2 * BOARD_PAD);
         const canvas = el("canvas", { display: "block", width: "100%", height: "auto" });
-        canvas.width = width * 2;
-        canvas.height = height * 2;
+        canvas.width = width * RATIO;
+        canvas.height = height * RATIO;
         const ctx = canvas.getContext("2d");
         const draw = () => {
-            ctx.setTransform(2, 0, 0, 2, 0, 0);
+            ctx.setTransform(RATIO, 0, 0, RATIO, 0, 0);
             ctx.fillStyle = BACKDROP;
             ctx.fillRect(0, 0, width, height);
             const view = g.makeView(box, width, height, BOARD_PAD);
@@ -181,7 +184,7 @@
         });
         const flip = button({ label: "Flip board", kind: "tab", pressed: false, onClick: () => { flipped = !flipped; flip.setPressed(flipped); draw(); } });
         draw();
-        return [frame(canvas), chips, flip, note(`${(box.x1 - box.x0).toFixed(1)} × ${(box.y1 - box.y0).toFixed(1)} mm · 4 layers · ${data.holes.length} drilled holes`)];
+        return [frame(zoomable(canvas, "PCB render")), chips, flip, note(`${(box.x1 - box.x0).toFixed(1)} × ${(box.y1 - box.y0).toFixed(1)} mm · 4 layers · ${data.holes.length} drilled holes`)];
     }
 
     // Edge.Cuts is drawn as line segments; chain them to fill the board shape.
@@ -206,17 +209,23 @@
         return text.trim().split("\n").map((line) => [...line.matchAll(/("([^"]*)"|[^,]*)(,|$)/g)].slice(0, -1).map((m) => m[2] !== undefined ? m[2] : m[1]));
     }
 
+    const copyRow = (...buttons) => add(row(SPACE.sm), buttons);
+
     function csvView(text) {
         const [head, ...rows] = csvRows(text);
-        return [table({ head, rows }), note(`${rows.length} rows`)];
+        return [copyRow(copyButton("Copy as CSV", () => text)), frame(table({ head, rows })), note(`${rows.length} rows. Copy pastes straight into a spreadsheet.`)];
     }
 
+    // The whole file, selectable, in a scrolling box. Copy puts all of it on the clipboard.
     function textView(text) {
         const lines = text.split("\n");
-        const pre = el("pre", { margin: "0", padding: px(SPACE.md), overflow: "auto", maxHeight: "320px", fontFamily: FONT.mono, fontSize: px(FONT.xs), lineHeight: "1.5" });
+        const pre = el("pre", { margin: "0", padding: px(SPACE.md), overflow: "auto", height: px(TEXT_H), fontFamily: FONT.mono, fontSize: px(FONT.xs), lineHeight: "1.5", userSelect: "text", whiteSpace: "pre", boxSizing: "border-box", tabSize: "4" });
         themed(pre, { color: "text" });
-        pre.textContent = lines.slice(0, CODE_LINES).join("\n");
-        return [frame(pre), note(lines.length > CODE_LINES ? `First ${CODE_LINES} of ${lines.length.toLocaleString()} lines. Download for the full file.` : `${lines.length} lines`)];
+        pre.textContent = text;
+        pre.tabIndex = 0;
+        pre.setAttribute("aria-label", "File contents");
+        const select = () => { const range = document.createRange(); range.selectNodeContents(pre); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range); };
+        return [copyRow(copyButton("Copy all", () => text, { fallback: select }), button({ label: "Select all", onClick: select })), frame(pre), note(`${lines.length.toLocaleString()} lines, ${(text.length / 1024).toFixed(1)} KB. The whole file is shown.`)];
     }
 
     const RENDER = {

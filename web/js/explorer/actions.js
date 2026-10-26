@@ -6,11 +6,11 @@
     const OPEN_THRESHOLD = 0.6;
 
     // Chips live under the lid, so open the case before showing one.
-    function selectItem(id, { fly = false } = {}) {
+    function selectItem(id, { fly = false, quiet = false } = {}) {
         const item = findItem(id);
         if (!item) return;
         if (item.type === "chip" && state.explode < OPEN_THRESHOLD) setState({ explode: 1 });
-        setState({ selected: id, tab: "parts" });
+        setState(quiet ? { selected: id } : { selected: id, tab: "parts" });
         if (fly) emit("focus", id);
     }
 
@@ -20,7 +20,7 @@
         const patch = { tour: at, explode: step.explode ?? state.explode, selected: null };
         if (step.mode) patch.mode = step.mode;
         setState(patch);
-        if (step.focus) selectItem(step.focus, { fly: true });
+        if (step.focus) selectItem(step.focus, { fly: true, quiet: true });
         else emit("preset", step.view || "iso");
         setState({ tab: "tour" });
     }

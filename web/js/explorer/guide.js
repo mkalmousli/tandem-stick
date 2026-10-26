@@ -64,7 +64,7 @@
     }
 
     function drawingCard(title, drawing, facts) {
-        const box = card(heading(3, title), drawing);
+        const box = card(heading(3, title), app.ui.zoom.zoomable(drawing, `${title} drawing`));
         if (facts) add(box, kvList(facts));
         return box;
     }

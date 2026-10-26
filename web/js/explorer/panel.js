@@ -13,8 +13,9 @@
     const { TOUR, ITEMS, PART_ORDER, findItem, MODES, PAIRING, LAYER_INFO, SIZE_FACTS, BOARD_FACTS } = app.data;
     const { ROLES } = app.content;
 
-    const TABS = [["tour", "Tour"], ["parts", "Parts"], ["signal", "Signal"], ["guide", "Guide"], ["files", "Files"]];
-    const RERENDER = ["tab", "guide", "file", "tour", "selected", "isolate", "mode", "layers", "explode"];
+    const TABS = [["tour", "Tour"], ["parts", "Parts"], ["signal", "Signal"], ["build", "Build"], ["guide", "Guide"], ["files", "Files"]];
+    // Which state keys make each view redraw, so a window is not rebuilt for changes it does not show.
+    const KEYS = { tour: ["tour"], parts: ["selected", "isolate", "explode"], signal: ["mode", "layers"], build: ["build", "buildMode"], guide: ["guide"], files: ["file"] };
     const EXPLODE_ON = 1;
 
     const group = (title, ...children) => add(stack(SPACE.sm), label(title.toUpperCase(), { size: FONT.xs, weight: FONT.bold, tone: "muted" }), children);
@@ -112,24 +113,26 @@
         return [picker, heading(2, section.title), ...section.build()];
     }
 
-    const VIEWS = { tour: tourView, parts: partsView, signal: signalView, guide: guideView, files: () => app.ex.files.filesView() };
+    const VIEWS = { tour: tourView, parts: partsView, signal: signalView, build: () => app.ex.build.buildView(), guide: guideView, files: () => app.ex.files.filesView() };
 
+    // One panel with a tab bar. The tab follows what you do: picking a part opens Parts, the tour opens Tour.
     function createPanel() {
-        const panel = stack(SPACE.lg, { padding: px(SPACE.lg), boxSizing: "border-box", overflowY: "auto", borderRadius: px(RADIUS.md), borderWidth: "1px", borderStyle: "solid" });
-        themed(panel, { background: "surface", borderColor: "line" });
-        const tabs = row(SPACE.xs);
+        const panel = el("div", { display: "flex", flexDirection: "column", gap: px(SPACE.md), padding: px(SPACE.lg), boxSizing: "border-box", borderRadius: px(RADIUS.md), borderWidth: "1px", borderStyle: "solid" });
+        themed(panel, { background: (palette) => `${palette.surface}f2`, borderColor: "line" });
+        const tabs = row(SPACE.xs, { flexWrap: "wrap", flexShrink: "0" });
+        const body = el("div", { flexGrow: "1", minHeight: "0px", display: "flex", flexDirection: "column", gap: px(SPACE.md) });
+        const view = region(body);
         TABS.forEach(([id, text]) => {
             const btn = button({ label: text, kind: "tab", pressed: state.tab === id, grow: true, onClick: () => setState({ tab: id }) });
             subscribe(() => btn.setPressed(state.tab === id));
             add(tabs, btn);
         });
-        const body = stack(SPACE.md);
-        const view = region(body);
-        const draw = () => view.render(() => add(body, VIEWS[state.tab]()));
+        const draw = () => view.render(() => { body.scrollTop = 0; add(body, VIEWS[state.tab]()); });
         draw();
-        subscribe((patch) => { if (RERENDER.some((key) => key in patch)) draw(); });
+        subscribe((patch) => { if ("tab" in patch || KEYS[state.tab].some((key) => key in patch)) draw(); });
         return add(panel, tabs, body);
     }
 
     app.ex.createPanel = createPanel;
+    app.ex.TABS = TABS;
 })();

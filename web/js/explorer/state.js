@@ -3,7 +3,7 @@
     const { track } = app.dom;
 
     const state = {
-        tab: "tour", tour: 0, guide: "glance", file: "board", spin: true, selected: null, isolate: false, mode: "target", explode: 1,
+        tab: "tour", tour: 0, build: 0, buildMode: "full", guide: "glance", file: "board", spin: true, selected: null, isolate: false, mode: "target", explode: 1,
         layers: { usb: true, ctrl: true, power: true, radio: true },
     };
     const subscribers = new Set();

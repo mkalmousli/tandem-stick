@@ -5,7 +5,7 @@
     const { selectItem, goTour } = app.ex.actions;
     const { track } = app.dom;
 
-    const TABS = ["tour", "parts", "signal"];
+    const TABS = ["tour", "parts", "signal", "build", "guide", "files"];
     const VIEWS = ["front", "rear", "top", "iso"];
     const MODE_NAMES = ["host", "target"];
     const COPIED_MS = 1400;
