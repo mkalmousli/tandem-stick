@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Open hardware concept: button-free wireless USB sticks. Board, case, 3D explorer and test lab.",
+  "description": "Open hardware concept: button-free wireless USB sticks. Board, case, 3D explorer and design docs.",
   "license": "MIT",
   "repository": "github:mkalmousli/tandem-stick",
   "scripts": {

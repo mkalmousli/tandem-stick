@@ -1,14 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Tandem Stick logo: two USB sticks in tandem">
-  <rect width="128" height="128" rx="20" fill="#0a0f2e"/>
-  <rect x="4" y="4" width="120" height="120" rx="17" fill="none" stroke="#ffe14d" stroke-width="3"/>
-  <g shape-rendering="crispEdges">
-    <rect x="20" y="26" width="64" height="28" rx="4" fill="#ffe14d"/>
-    <rect x="84" y="32" width="24" height="16" fill="#d8dbe6"/><rect x="90" y="37" width="14" height="6" fill="#59607a"/>
-    <rect x="28" y="34" width="8" height="8" fill="#0a0f2e"/>
-    <rect x="36" y="74" width="64" height="28" rx="4" fill="#38e0c0"/>
-    <rect x="100" y="80" width="14" height="16" fill="#d8dbe6"/><rect x="104" y="85" width="8" height="6" fill="#59607a"/>
-    <rect x="44" y="82" width="8" height="8" fill="#0a0f2e"/>
-  </g>
-  <g fill="#fff" shape-rendering="crispEdges"><rect x="58" y="58" width="4" height="4"/><rect x="62" y="62" width="4" height="4"/><rect x="66" y="66" width="4" height="4"/></g>
-  <path d="M20 66v-6M108 66v-6" stroke="#7fe3ff" stroke-width="0"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Tandem Stick logo: a 3D USB stick">
+<defs>
+<linearGradient id="at" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd978"/><stop offset="1" stop-color="#ffb224"/></linearGradient>
+<linearGradient id="al" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0a010"/><stop offset="1" stop-color="#c47500"/></linearGradient>
+<linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c47e00"/><stop offset="1" stop-color="#8a5200"/></linearGradient>
+<linearGradient id="mt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f6fa"/><stop offset="1" stop-color="#c9cfda"/></linearGradient>
+<linearGradient id="ml" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8bfcc"/><stop offset="1" stop-color="#8e96a5"/></linearGradient>
+<linearGradient id="mr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9aa2b1"/><stop offset="1" stop-color="#6d7584"/></linearGradient>
+</defs>
+<ellipse cx="68.0" cy="102" rx="45" ry="6" fill="#000" opacity=".2"/>
+<polygon points="10.0,55.6 64.0,86.8 64.0,71.2 10.0,40.0" fill="url(#al)" />
+<polygon points="94.6,69.1 64.0,86.8 64.0,71.2 94.6,53.5" fill="url(#ar)" />
+<polygon points="40.6,22.3 94.6,53.5 64.0,71.2 10.0,40.0" fill="url(#at)" />
+<polygon points="50.9,34.0 85.2,53.8 64.5,65.7 30.2,46.0" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1"/>
+<polygon points="34.3,33.2 39.7,36.4 34.3,39.5 28.9,36.4" fill="#fff6d6" />
+<polygon points="64.0,80.0 94.6,97.7 94.6,88.3 64.0,70.7" fill="url(#ml)" />
+<polygon points="118.0,84.2 94.6,97.7 94.6,88.3 118.0,74.8" fill="url(#mr)" />
+<polygon points="87.4,57.1 118.0,74.8 94.6,88.3 64.0,70.7" fill="url(#mt)" />
+<polygon points="114.8,76.6 99.5,67.8 96.0,69.9 111.2,78.7" fill="#5b616d" />
+<polygon points="101.3,84.4 86.0,75.6 82.5,77.7 97.8,86.5" fill="#5b616d" />
 </svg>

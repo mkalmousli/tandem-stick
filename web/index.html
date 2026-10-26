@@ -1,15 +1,8 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="assets/site.css"><link rel="stylesheet" href="story/story.css"><script type="module" src="assets/site.js"></script><title>Tandem Stick · how it works</title>
-<meta name="description" content="A step-by-step 3D animation of how a Tandem Stick plugs in, pairs, and controls many machines by radio."><meta property="og:image" content="assets/logo-512.png"></head>
-<body class="story"><main id="main">
-<section class="win stage"><div class="bar"><span>Tandem.exe — How it works</span><span><i>_</i><i>□</i><i>×</i></span></div>
-<div class="view"><canvas id="cv"></canvas><div id="tags"></div><div class="say" id="say"></div></div>
-<div class="ctl"><button class="btn" id="prev">◀ Back</button><button class="btn" id="play">❚❚ Pause</button><button class="btn" id="next">Next ▶</button><input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Step timeline"></div>
-<div class="status" id="status"></div></section>
-<aside class="win side"><div class="bar"><span>Steps</span></div><ol class="steps" id="steps"></ol>
-<div class="ctl"><a class="btn" href="explore.html">Open 3D explorer</a><a class="btn" href="docs.html">Design docs</a></div></aside>
-</main>
-<script type="module">
-import { start } from "./story/story.js";
-try { start(); } catch (err) { console.error(err); document.getElementById("say").textContent = "3D needs WebGL. Use the Overview page instead."; }
-</script></body></html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="main.js"></script>
+</head>
+</html>

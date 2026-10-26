@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { CHECKS, parseCsv } from "../web/assets/checks.js";
+import { CHECKS, parseCsv } from "./lib/checks.js";
 
 const root = new URL("../", import.meta.url);
 const load = async (path, kind) => {
@@ -18,7 +18,7 @@ test("CSV parser handles quoted commas", () => {
 });
 
 test("checks can fail: truncated STL and wrong outline are rejected", async () => {
-    const { stlInfo, gerberBounds } = await import("../web/assets/checks.js");
+    const { stlInfo, gerberBounds } = await import("./lib/checks.js");
     assert.throws(() => stlInfo(new ArrayBuffer(100)));
     assert.throws(() => gerberBounds("%FSLAX46Y46*%\n%MOMM*%\nM02*"));
     const open = new ArrayBuffer(84 + 50); // one lone triangle has unpaired edges
@@ -27,7 +27,7 @@ test("checks can fail: truncated STL and wrong outline are rejected", async () =
 });
 
 test("simulator is deterministic and loss hurts", async () => {
-    const { simulateJoin, simulateInput } = await import("../web/assets/sim.js");
+    const { simulateJoin, simulateInput } = await import("./lib/sim.js");
     const a = simulateJoin({ targets: 10, loss: 0.1, seed: 3 });
     assert.deepEqual(a, simulateJoin({ targets: 10, loss: 0.1, seed: 3 }));
     assert.equal(a.joined, 10);

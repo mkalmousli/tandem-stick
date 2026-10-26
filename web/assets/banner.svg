@@ -1,11 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 360" role="img" aria-label="Tandem Stick: a DIY wireless USB stick, untested design">
   <rect width="1280" height="360" fill="#0a0f2e"/>
   <rect x="8" y="8" width="1264" height="344" fill="none" stroke="#ffe14d" stroke-width="4"/>
-  <g shape-rendering="crispEdges">
-    <rect x="80" y="90" width="256" height="112" rx="12" fill="#ffe14d"/><rect x="336" y="114" width="96" height="64" fill="#d8dbe6"/><rect x="360" y="134" width="56" height="24" fill="#59607a"/><rect x="112" y="122" width="32" height="32" fill="#0a0f2e"/>
-    <rect x="144" y="230" width="256" height="112" rx="12" fill="#38e0c0" transform="translate(0 -22)"/><rect x="400" y="232" width="56" height="64" fill="#d8dbe6"/><rect x="416" y="252" width="32" height="24" fill="#59607a"/><rect x="176" y="240" width="32" height="32" fill="#0a0f2e"/>
-  </g>
-  <text x="560" y="170" fill="#fff" font-family="Tahoma, Verdana, sans-serif" font-weight="700" font-size="88">Tandem Stick</text>
-  <text x="564" y="226" fill="#7fe3ff" font-family="Courier New, monospace" font-size="30">A DIY wireless USB stick. One per machine.</text>
-  <text x="564" y="276" fill="#ffe14d" font-family="Courier New, monospace" font-size="26">UNTESTED DESIGN · open hardware · MIT</text>
+<g transform="translate(60,30) scale(2.4)">
+<defs>
+<linearGradient id="at" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd978"/><stop offset="1" stop-color="#ffb224"/></linearGradient>
+<linearGradient id="al" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0a010"/><stop offset="1" stop-color="#c47500"/></linearGradient>
+<linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c47e00"/><stop offset="1" stop-color="#8a5200"/></linearGradient>
+<linearGradient id="mt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f6fa"/><stop offset="1" stop-color="#c9cfda"/></linearGradient>
+<linearGradient id="ml" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8bfcc"/><stop offset="1" stop-color="#8e96a5"/></linearGradient>
+<linearGradient id="mr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9aa2b1"/><stop offset="1" stop-color="#6d7584"/></linearGradient>
+</defs>
+<ellipse cx="68.0" cy="102" rx="45" ry="6" fill="#000" opacity=".2"/>
+<polygon points="10.0,55.6 64.0,86.8 64.0,71.2 10.0,40.0" fill="url(#al)" />
+<polygon points="94.6,69.1 64.0,86.8 64.0,71.2 94.6,53.5" fill="url(#ar)" />
+<polygon points="40.6,22.3 94.6,53.5 64.0,71.2 10.0,40.0" fill="url(#at)" />
+<polygon points="50.9,34.0 85.2,53.8 64.5,65.7 30.2,46.0" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1"/>
+<polygon points="34.3,33.2 39.7,36.4 34.3,39.5 28.9,36.4" fill="#fff6d6" />
+<polygon points="64.0,80.0 94.6,97.7 94.6,88.3 64.0,70.7" fill="url(#ml)" />
+<polygon points="118.0,84.2 94.6,97.7 94.6,88.3 118.0,74.8" fill="url(#mr)" />
+<polygon points="87.4,57.1 118.0,74.8 94.6,88.3 64.0,70.7" fill="url(#mt)" />
+<polygon points="114.8,76.6 99.5,67.8 96.0,69.9 111.2,78.7" fill="#5b616d" />
+<polygon points="101.3,84.4 86.0,75.6 82.5,77.7 97.8,86.5" fill="#5b616d" />
+
+</g>
+  <text x="560" y="170" fill="#fff" font-family="Tahoma, Verdana, sans-serif" font-weight="700" font-size="84" textLength="660" lengthAdjust="spacingAndGlyphs">Tandem Stick</text>
+  <text x="564" y="226" fill="#7fe3ff" font-family="Courier New, monospace" font-size="24" textLength="640" lengthAdjust="spacingAndGlyphs">A DIY wireless USB stick. One per machine.</text>
+  <text x="564" y="276" fill="#ffe14d" font-family="Courier New, monospace" font-size="22" textLength="560" lengthAdjust="spacingAndGlyphs">UNTESTED DESIGN · open hardware · MIT</text>
 </svg>

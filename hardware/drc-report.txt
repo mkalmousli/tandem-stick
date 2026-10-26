@@ -1,0 +1,54 @@
+** Drc report for /mnt/MKSpace/TOOLS/Product/hardware/stick.kicad_pcb **
+** Created on 2026-10-26 14:13:09 **
+
+** Found 14 DRC violations **
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(22.8000 mm, 16.6000 mm): Footprint TP1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(26.9000 mm, 1.8000 mm): Footprint C1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(24.2000 mm, 4.0000 mm): Footprint U2
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(25.0000 mm, 16.6000 mm): Footprint TP2
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(24.2000 mm, 12.8000 mm): Footprint D1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(24.2000 mm, 1.4000 mm): Footprint R1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(24.2000 mm, 6.4000 mm): Footprint C2
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(0.0000 mm, 0.0000 mm): Footprint J1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(13.3000 mm, 8.7000 mm): Footprint U1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(22.3000 mm, 1.4000 mm): Footprint C5
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(26.3000 mm, 12.8000 mm): Footprint C4
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(8.6250 mm, 14.6000 mm): Footprint C3
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; Severity: error
+    @(26.9000 mm, 1.8000 mm): Footprint C1
+    @(24.2000 mm, 4.0000 mm): Footprint U2
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; Severity: error
+    @(24.2000 mm, 4.0000 mm): Footprint U2
+    @(24.2000 mm, 6.4000 mm): Footprint C2
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** End of Report **

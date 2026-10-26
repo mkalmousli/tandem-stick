@@ -116,6 +116,7 @@ c2 = place("C2", CAP, "C_0603_1608Metric", 24.2, 6.4, value="10uF")
 c4 = place("C4", CAP, "C_0402_1005Metric", 26.3, 12.8, rot=90, value="100nF")
 c5 = place("C5", CAP, "C_0402_1005Metric", 22.3, 1.4, value="1uF")
 r1 = place("R1", RES, "R_0402_1005Metric", 24.2, 1.4, value="10k")
+c3 = place("C3", CAP, "C_0402_1005Metric", 8.625, 14.6, value="100nF", flip=True)   # module decoupling, back side under pads 1-3
 tp_boot = place("TP1", STD + "TestPoint.pretty", "TestPoint_Pad_D1.0mm", 22.8, 16.6, value="BOOT")
 tp_gnd = place("TP2", STD + "TestPoint.pretty", "TestPoint_Pad_D1.0mm", 25.0, 16.6, value="GND")
 
@@ -128,6 +129,7 @@ assign(d1, {"2": "GND", "3": "LED_DIN", "4": "3V3"})
 assign(c1, {"1": "VBUS", "2": "GND"})
 assign(c2, {"1": "3V3", "2": "GND"})
 assign(c4, {"1": "3V3", "2": "GND"})
+assign(c3, {"1": "GND", "2": "3V3"})
 assign(c5, {"1": "EN", "2": "GND"})
 assign(r1, {"1": "3V3", "2": "EN"})
 assign(tp_boot, {"1": "IO0"})
@@ -255,6 +257,8 @@ def label(text, x, y, layer, size=1.0):
 
 
 label("TANDEM", 16.5, 8.7, B_SILK, 1.6)
+label("v1", 16.5, 11.2, B_SILK, 0.9)
+label("D1", 24.2, 10.4, F_SILK, 0.8)
 label("TP1 BOOT  TP2 GND", 16.5, 14.5, B_SILK, 0.9)
 
 board.Save(HERE + "/stick.kicad_pcb")

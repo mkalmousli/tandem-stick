@@ -1,8 +1,8 @@
 // Writes the printable case halves as binary STL (mm). Run: node print/exportStl.mjs
 import { writeFileSync } from "node:fs";
-import * as THREE from "../web/explorer/src/scene/three.js";
-import { buildTray, buildLid } from "../web/explorer/src/scene/enclosure.js";
-import { DIM } from "../web/explorer/src/data.js";
+import { loadScene } from "../tests/lib/webapp.mjs";
+
+const { THREE, buildTray, buildLid, DIM } = loadScene();
 
 function toStl(group) {
     group.updateMatrixWorld(true);
