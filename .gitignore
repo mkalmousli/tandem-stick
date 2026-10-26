@@ -1,0 +1,6 @@
+dist/
+node_modules/
+*.kicad_pcb-bak
+fp-info-cache
+__pycache__/
+*.kicad_prl

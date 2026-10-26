@@ -1,0 +1,16 @@
+{
+  "name": "tandem-stick",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Open hardware concept: button-free wireless USB sticks. Board, case, 3D explorer and test lab.",
+  "license": "MIT",
+  "repository": "github:mkalmousli/tandem-stick",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "build": "node scripts/build-site.mjs",
+    "serve": "node scripts/build-site.mjs && python3 -m http.server 8765 -d dist",
+    "stl": "node mechanical/exportStl.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

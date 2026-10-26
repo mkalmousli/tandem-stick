@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="assets/site.css"><script type="module" src="assets/site.js"></script><title>Explore in 3D · Tandem Stick</title>
+<meta name="description" content="Interactive 3D model of the Tandem Stick: take the guided tour, open the case, click any part."></head>
+<body class="explorer"><main id="main"><div id="app" aria-label="3D product explorer"></div></main>
+<noscript><p class="nojs">The 3D explorer needs JavaScript and WebGL.</p></noscript>
+<script type="module">
+const host = document.getElementById("app");
+try {
+    const app = await import("./explorer/src/app.js");
+    app.start(host);
+} catch (err) {
+    host.innerHTML = '<div class="nojs"><h2>Could not start the 3D view</h2><p class="muted">Your browser may lack WebGL, or the page was opened from file://. Serve it over HTTP (see the README).</p><pre></pre></div>';
+    host.querySelector("pre").textContent = String(err && err.stack || err);
+}
+</script></body></html>
